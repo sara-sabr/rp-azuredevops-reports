@@ -1,0 +1,51 @@
+{
+  "name": "azboards-workitem-automation",
+  "description": "Work Item Automation",
+  "author": "ESDC IT RP",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sara-sabr/azboards-workitem-automation"
+  },
+  "scripts": {
+    "clean": "rimraf ./dist ./out",
+    "compile": "npm run clean && webpack --mode production",
+    "compile:dev": "npm run clean && webpack --mode development",
+    "package": "npm run compile && tfx extension create --manifest-globs vss-extension.json src/**/vss-extension.json --overrides-file configs/release.json --output-path out",
+    "package:dev": "npm run compile:dev && tfx extension create --manifest-globs vss-extension.json src/**/vss-extension.json --overrides-file configs/dev.json --output-path out",
+    "publish": "npm run compile && tfx extension publish --manifest-globs vss-extension.json src/**/vss-extension.json --overrides-file configs/release.json --output-path out",
+    "publish:dev": "npm run compile:dev && tfx extension publish --manifest-globs vss-extension.json src/**/vss-extension.json --overrides-file configs/dev.json --output-path out",
+    "start:dev": "webpack-dev-server --mode development"
+  },
+  "dependencies": {
+    "azure-devops-extension-api": "^1.158.0",
+    "azure-devops-extension-sdk": "^2.0.11",
+    "azure-devops-ui": "^1.160.4",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0"
+  },
+  "devDependencies": {
+    "@types/react": "^16.14.4",
+    "@types/react-dom": "^16.9.11",
+    "@typescript-eslint/eslint-plugin": "^1.13.0",
+    "@typescript-eslint/parser": "^1.13.0",
+    "base64-inline-loader": "^1.1.1",
+    "copy-webpack-plugin": "^5.1.2",
+    "css-loader": "^2.1.1",
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.3.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "file-loader": "^3.0.1",
+    "node-sass": "^4.14.1",
+    "prettier": "^1.19.1",
+    "rimraf": "^2.7.1",
+    "sass-loader": "^7.3.1",
+    "style-loader": "^0.23.1",
+    "tfx-cli": "^0.7.11",
+    "ts-loader": "^6.2.2",
+    "typescript": "^3.9.9",
+    "webpack": "^4.46.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.2"
+  }
+}

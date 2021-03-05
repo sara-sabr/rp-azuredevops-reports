@@ -1,0 +1,32 @@
+{
+  "manifestVersion": 1,
+  "version": "0.0.1",
+  "name": "AzBoards Work Item Automation",
+  "description": "Azure Boards Work Item Automation",
+  "publisher": "ESDC-IT-SABR-RP",
+  "demands": ["api-version/3.0"],
+  "categories": ["Azure Boards"],
+  "targets": [
+    {
+      "id": "Microsoft.VisualStudio.Services"
+    }
+  ],
+  "content": {
+    "details": {
+      "path": "README.md"
+    }
+  },
+  "icons": {
+    "default": "img/logo.png"
+  },
+  "files": [
+    {
+      "path": "dist",
+      "addressable": true
+    },
+    {
+      "path": "img",
+      "addressable": true
+    }
+  ]
+}
