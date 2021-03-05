@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "version": "0.0.1",
+  "version": "0.0.3",
   "name": "AzBoards Work Item Automation",
   "description": "Azure Boards Work Item Automation",
   "publisher": "ESDC-IT-SABR-RP",
@@ -13,7 +13,7 @@
   ],
   "content": {
     "details": {
-      "path": "README.md"
+      "path": "overview.md"
     }
   },
   "icons": {
