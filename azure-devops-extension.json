@@ -1,12 +1,14 @@
 {
   "manifestVersion": 1,
-  "version": "0.0.4",
+  "version": "0.0.24",
   "name": "AzBoards Work Item Automation",
   "description": "Azure Boards Work Item Automation",
   "publisher": "ESDC-IT-SABR-RP",
   "demands": ["api-version/3.0"],
   "categories": ["Azure Boards"],
-  "scope": ["vso.work_full"],
+  "scopes": [
+    "vso.work_full"
+  ],
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
@@ -28,6 +30,9 @@
     "color": "rgb(51,65,133)",
     "theme": "dark"
   },
+  "galleryFlags": [
+    "Preview"
+  ],
   "tags": [
     "Work Items"
   ],
@@ -38,6 +43,9 @@
     "license": {
       "path": "marketplace/license.md"
     }
+  },
+  "CustomerQnASupport": {
+    "enablemarketplaceqna":"false"
   },
   "icons": {
     "default": "img/logo.png"

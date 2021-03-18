@@ -8,6 +8,8 @@ fs.readdirSync(srcDir)
   .filter(dir => fs.statSync(path.join(srcDir, dir)).isDirectory())
   .forEach(dir => (entries[dir] = "./" + path.join("src", dir, dir)));
 
+console.log(entries)
+
 module.exports = {
   target: "web",
   entry: entries,
