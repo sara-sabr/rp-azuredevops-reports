@@ -5,10 +5,10 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const entries = {};
 const srcDir = path.join(__dirname, "src");
 fs.readdirSync(srcDir)
-  .filter(dir => fs.statSync(path.join(srcDir, dir)).isDirectory())
+  .filter(dir => fs.statSync(path.join(srcDir, dir)).isDirectory() && fs.existsSync(path.join(srcDir, dir, 'azure-devops-extension.json')))
   .forEach(dir => (entries[dir] = "./" + path.join("src", dir, dir)));
 
-console.log(entries)
+console.log(entries);
 
 module.exports = {
   target: "web",

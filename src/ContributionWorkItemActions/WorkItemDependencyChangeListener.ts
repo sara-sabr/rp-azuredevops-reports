@@ -1,8 +1,8 @@
 import { IWorkItemNotificationListener, IWorkItemChangedArgs, IWorkItemLoadedArgs, IWorkItemFieldChangedArgs, WorkItemTrackingServiceIds, IWorkItemFormService, WorkItemExpand } from "azure-devops-extension-api/WorkItemTracking";
 
-import { WorkItemConstants } from "../util/WorkItemConstants";
 import * as SDK from "azure-devops-extension-sdk";
-import { Util } from "../util/util";
+import { Utils } from "../common/Utils";
+import { Constants } from "../common/Constants";
 
 
 /**
@@ -43,15 +43,15 @@ export class WorkItemDependencyChangeListener implements IWorkItemNotificationLi
 
     async onSaved(savedEventArgs:IWorkItemChangedArgs): Promise<void> {
         const workItemFormService:IWorkItemFormService = await SDK.getService(WorkItemTrackingServiceIds.WorkItemFormService);
-        const stateChangedDate:Date = await workItemFormService.getFieldValue(WorkItemConstants.FIELD_STATE_CHANGED) as Date;
-        const witChangedDate:Date = await workItemFormService.getFieldValue(WorkItemConstants.FIELD_CHANGED) as Date;
-        const state:string  = await workItemFormService.getFieldValue(WorkItemConstants.FIELD_STATE) as string;
+        const stateChangedDate:Date = await workItemFormService.getFieldValue(Constants.WIT_FIELD_STATE_CHANGED) as Date;
+        const witChangedDate:Date = await workItemFormService.getFieldValue(Constants.WIT_FIELD_CHANGED) as Date;
+        const state:string  = await workItemFormService.getFieldValue(Constants.WIT_FIELD_STATE) as string;
 
         // Check if we have a parent.
-        const witFields = await workItemFormService.getFieldValues([WorkItemConstants.FIELD_PARENT_ID])
-        const parent:number = witFields[WorkItemConstants.FIELD_PARENT_ID] as number;
+        const witFields = await workItemFormService.getFieldValues([Constants.WIT_FIELD_PARENT_ID])
+        const parent:number = witFields[Constants.WIT_FIELD_PARENT_ID] as number;
 
-        await Util.validateAndUpdateParents(WorkItemConstants.WIT_API_CLIENT, parent, savedEventArgs.id, witChangedDate, stateChangedDate, state);
+        await Utils.validateAndUpdateParents(Utils.WIT_API_CLIENT, parent, savedEventArgs.id, witChangedDate, stateChangedDate, state);
     };
 
     onRefreshed(refreshEventArgs:IWorkItemChangedArgs): void {
