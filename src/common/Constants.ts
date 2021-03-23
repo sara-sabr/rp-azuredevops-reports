@@ -33,7 +33,22 @@ export class Constants {
     /**
      * Label for PBIs.
      */
-    static readonly WIT_PBI = "Product Backlog Item";
+    static readonly WIT_TYPE_PBI = "Product Backlog Item";
+
+    /**
+     * Label for Feature.
+     */
+    static readonly WIT_TYPE_FEATURE = "Feature";
+
+    /**
+     * Label for Imepediment.
+     */
+    static readonly WIT_TYPE_IMPEDIMENT = "Impediment";
+
+    /**
+     * Label for Epic.
+     */
+    static readonly WIT_TYPE_EPIC = "Epic";
 
     /**
      * The system name for the ID field.
@@ -81,6 +96,11 @@ export class Constants {
     static readonly WIT_FIELD_TITLE = "System.Title";
 
     /**
+     * The system name for work item type.
+     */
+    static readonly WIT_FIELD_TYPE = "System.WorkItemType";
+
+    /**
      * The system name for the state changed date field.
      */
     static readonly WIT_FIELD_STATE_CHANGED = "Microsoft.VSTS.Common.StateChangeDate";
@@ -110,6 +130,11 @@ export class Constants {
      * and the target is the child.
      */
     static readonly WIT_REL_CHILD = "System.LinkTypes.Hierarchy-Forward";
+
+    /**
+     * The relation is a related reference.
+     */
+    static readonly WIT_REL_RELATED = "System.LinkTypes.Related";
 
     /**
      * Risk level low.

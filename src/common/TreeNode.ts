@@ -1,4 +1,4 @@
-export class TreeNode<T> {
+export class TreeNode<T,Y> {
     /**
      * Data at this node.
      */
@@ -7,12 +7,17 @@ export class TreeNode<T> {
     /**
      * The parent node.
      */
-    parent:TreeNode<T> | undefined;
+    parent:TreeNode<T,Y> | undefined;
 
     /**
      * The children.
      */
-    children:TreeNode<T>[] = [];
+    children:TreeNode<T,Y>[] = [];
+
+    /**
+     * The map of all nodes to their reference key. Only populate it for the root node.
+     */
+    nodeMap?: Map<Y, TreeNode<T,Y>>;
 
     /**
      * Create a tree node.
@@ -20,7 +25,7 @@ export class TreeNode<T> {
      * @param data data at this node.
      * @param parent the parent node.
      */
-    constructor(data:T|undefined, parent?:TreeNode<T>) {
+    constructor(data:T|undefined, parent?:TreeNode<T,Y>) {
         if (data) {
             this.data = data;
         }
@@ -37,7 +42,7 @@ export class TreeNode<T> {
      *
      * @param child the child node.
      */
-    public addChildren(child:TreeNode<T>) {
+    public addChildren(child:TreeNode<T,Y>) {
         this.children.push(child);
         child.parent = this;
     }
@@ -51,19 +56,23 @@ export class TreeNode<T> {
         return this.parent !== undefined && this.parent.parent == undefined;
     }
 
+    public populateNodeMap(nodeMap:Map<Y, TreeNode<T,Y>>):void {
+        this.nodeMap = nodeMap;
+    }
+
     /**
      * Walk the tree
      *
      * @param node the node to start walking
      */
-    public static walkTreePreOrder<T>(node:TreeNode<T>):TreeNode<T>[] {
-        const result:TreeNode<T>[] = [];
+    public static walkTreePreOrder<T,Y>(node:TreeNode<T,Y>):TreeNode<T,Y>[] {
+        const result:TreeNode<T,Y>[] = [];
 
         if (node.data != null) {
             result.push(node);
         }
 
-        let childArray:TreeNode<T>[];
+        let childArray:TreeNode<T,Y>[];
 
         for (let idx = 0; idx < node.children.length; idx++) {
             childArray = TreeNode.walkTreePreOrder(node.children[idx]);

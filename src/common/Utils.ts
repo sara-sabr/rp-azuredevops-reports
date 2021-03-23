@@ -34,7 +34,7 @@ export class Utils {
      */
     static async executeTreeQuery<T extends WorkItemBase>(name:string,
         type: { new (): T }
-        ):Promise<TreeNode<T>> {
+        ):Promise<TreeNode<T,number>> {
         const query = await this.getQuery(name);
 
         if (query.isFolder) {
@@ -42,9 +42,9 @@ export class Utils {
         }
 
         const projectName = await this.getProjectName();
-        const rootNode = new TreeNode<T>(undefined);
-        let currentNode:TreeNode<T>;
-        const nodeMap = new Map<number, TreeNode<T>>();
+        const rootNode = new TreeNode<T,number>(undefined);
+        let currentNode:TreeNode<T,number>;
+        const nodeMap = new Map<number, TreeNode<T,number>>();
         let currentWorkItemLink:WorkItemLink;
         let data:T;
 
@@ -55,13 +55,14 @@ export class Utils {
             data = new type();
             data.id = currentWorkItemLink.target.id;
 
-            currentNode = new TreeNode<T>(data);
+            currentNode = new TreeNode<T,number>(data);
             nodeMap.set(data.id, currentNode);
 
             if (currentWorkItemLink.rel === null) {
                 // Top level node.
                 rootNode.addChildren(currentNode);
-            } else if (currentWorkItemLink.rel === Constants.WIT_REL_CHILD){
+            } else if (currentWorkItemLink.rel === Constants.WIT_REL_CHILD ||
+                       currentWorkItemLink.rel === Constants.WIT_REL_RELATED){
                 // Has a parent and we should of seen it already.
                 nodeMap.get(currentWorkItemLink.source.id)?.addChildren(currentNode);
             }
@@ -89,6 +90,7 @@ export class Utils {
             nodeMap.get(workItem.id)?.data?.populateFromWorkItem(workItem);
         }
 
+        rootNode.populateNodeMap(nodeMap);
         return rootNode;
     }
 

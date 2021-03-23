@@ -17,6 +17,15 @@ export class PMHubStatusConfiguration {
     }
 
     /**
+     * Get the configuration for the impediments list.
+     *
+     * @returns the name of the query.
+     */
+    public static getQueryImpediments():string {
+        return "Impediments"
+    }
+
+    /**
      * Get the target field as specified by the configuration.
      *
      * @returns the field name for objetive.

@@ -1,6 +1,9 @@
 import { IHeaderCommandBarItem } from "azure-devops-ui/HeaderCommandBar";
 import { MenuItemType } from "azure-devops-ui/Menu";
 
+/**
+ * Defines the menu bar for project status report page.
+ */
 export const commandBarItemsAdvanced: IHeaderCommandBarItem[] = [
     {
         iconProps: {

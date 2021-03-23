@@ -20,13 +20,12 @@ import { Dropdown } from "azure-devops-ui/Dropdown";
 import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
 import { HeaderCommandBar, toggleFullScreen } from "azure-devops-ui/HeaderCommandBar";
 import {commandBarItemsAdvanced} from './Header'
-import { Utils } from "../common/Utils";
-import { PMHubStatusConfiguration } from "./Configuration";
 import { ProjectStatus } from "./ProjectStatus";
 import { IPMHubStatusPage } from "./IPMHubStatusPage";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import { TreeNode } from "../common/TreeNode";
 import { Constants } from "../common/Constants";
+import { PMHubStatusUtils } from "./PMHubStatusUtils";
 
 class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
   private statusReportSelection = new DropdownSelection();
@@ -46,9 +45,9 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    * Wrap all asyc calls into this.
    */
   private async loadData():Promise<void> {
-    const queryLatestStatusResults = await Utils.executeTreeQuery(PMHubStatusConfiguration.getQueryForLatestStatus(), ProjectStatus);
+    const latestProjectStatus = await PMHubStatusUtils.getLatestProjectStatuses();
     this.rowNumber = 1;
-    this.setState({currentStatus: queryLatestStatusResults});
+    this.setState({currentStatus: latestProjectStatus});
   }
 
   /**
@@ -56,7 +55,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    *
    * @param projectStatusNode the node to write
    */
-  private writeStatusRow(projectStatusNode: TreeNode<ProjectStatus>):JSX.Element {
+  private writeStatusRow(projectStatusNode: TreeNode<ProjectStatus,number>):JSX.Element {
     const rowData:ProjectStatus | undefined = projectStatusNode.data;
 
     if (rowData === undefined) { return (<tr><td>No Data</td></tr>)}
@@ -96,6 +95,16 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
             <p dangerouslySetInnerHTML={{__html: rowData.objective}}></p>
             <p><b>Action/Status</b>: {rowData.status}</p>
             <p dangerouslySetInnerHTML={{__html: rowData.action}}></p>
+            <p><b>Issues</b>: {rowData.keyIssues.length === 0 && ("No issues")}</p>
+            {rowData.keyIssues.length > 0 && (
+              <ul>
+                {
+                  rowData.keyIssues.map((value, index) => {
+                    return (<li key={index}>{value}</li>)
+                  })
+                }
+              </ul>
+            )}
           </td>
         )
       }
@@ -103,6 +112,12 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
     )
   }
 
+  /**
+   * Write the risk column.
+   *
+   * @param riskLevel risk level
+   * @param id the wit ID
+   */
   private writeColumnRisk(riskLevel:string|undefined, id:number):JSX.Element {
     let statusProp:IStatusProps = Statuses.Queued;
     let statusText:string = "Pending";
