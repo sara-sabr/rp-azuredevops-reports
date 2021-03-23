@@ -12,26 +12,52 @@
     object-fit: scale-down;
 }
 
+table.status-report-tables {
+    border: 1px solid black;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table.status-report-tables tr {
+    border-bottom: 1px solid black;
+    border-collapse: collapse;
+}
+
+table.status-report-tables th {
+    color: white;
+    background-color: #0072C1;
+}
+
+table.status-report-tables td.vision {
+    color: black;
+    background-color: #A3C6E3;
+}
+
 table.status-report-tables th.statusColumn,
 table.status-report-tables td.statusColumn {
     width: 5%;
-    text-align: left;
+    text-align: center;
 }
 
 table.status-report-tables th.dateColumn,
 table.status-report-tables td.dateColumn {
-    width: 20%;
+    width: 10%;
     text-align: left;
 }
 
 table.status-report-tables th.detailsColumn,
 table.status-report-tables td.detailsColumn {
-    width: 75%;
+    width: 85%;
     text-align: left;
 }
 
 table.status-report-tables li {
     list-style-type: disc;
+}
+
+table.status-report-tables ul,
+table.status-report-tables ol {
+    padding-left: 40px;
 }
 
 table.status-report-tables {
@@ -49,4 +75,8 @@ table.status-report-tables span.risk-med {
 
 table.status-report-tables span.risk-low {
     color: $status-success-foreground;
+}
+
+div.activityTitle {
+    font-weight: bold;
 }

@@ -96,6 +96,11 @@ export class Constants {
     static readonly WIT_FIELD_START_DATE = "Microsoft.VSTS.Scheduling.StartDate";
 
     /**
+     * The system name for the target date.
+     */
+    static readonly WIT_FIELD_TARGET_DATE = "Microsoft.VSTS.Scheduling.TargetDate";
+
+    /**
      * The system name for the finish date.
      */
     static readonly WIT_FIELD_FINISH_DATE = "Microsoft.VSTS.Scheduling.FinishDate";
@@ -105,4 +110,19 @@ export class Constants {
      * and the target is the child.
      */
     static readonly WIT_REL_CHILD = "System.LinkTypes.Hierarchy-Forward";
+
+    /**
+     * Risk level low.
+     */
+    static readonly WIT_RISK_LOW = "3 - Low";
+
+    /**
+     * Risk level medium.
+     */
+    static readonly WIT_RISK_MED = "2 - Meidum";
+
+    /**
+     * Risk level high.
+     */
+    static readonly WIT_RISK_HIGH = "1 - High";
 }

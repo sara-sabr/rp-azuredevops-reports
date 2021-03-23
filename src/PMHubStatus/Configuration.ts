@@ -17,6 +17,15 @@ export class PMHubStatusConfiguration {
     }
 
     /**
+     * Get the target field as specified by the configuration.
+     *
+     * @returns the field name for objetive.
+     */
+    public static getFieldTargetDate():string {
+        return Constants.WIT_FIELD_TARGET_DATE;
+    }
+
+    /**
      * Get the objective field as specified by the configuration.
      *
      * @returns the field name for objetive.

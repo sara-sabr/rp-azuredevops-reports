@@ -43,18 +43,27 @@ export class TreeNode<T> {
     }
 
     /**
+     * Top level nodes are nodes where the root node is the parent.
+     *
+     * @returns true when top level node.
+     */
+    public isTopLevelNode():boolean {
+        return this.parent !== undefined && this.parent.parent == undefined;
+    }
+
+    /**
      * Walk the tree
      *
      * @param node the node to start walking
      */
-    public static walkTreePreOrder<T>(node:TreeNode<T>):T[] {
-        const result:T[] = [];
+    public static walkTreePreOrder<T>(node:TreeNode<T>):TreeNode<T>[] {
+        const result:TreeNode<T>[] = [];
 
         if (node.data != null) {
-            result.push(node.data);
+            result.push(node);
         }
 
-        let childArray:T[];
+        let childArray:TreeNode<T>[];
 
         for (let idx = 0; idx < node.children.length; idx++) {
             childArray = TreeNode.walkTreePreOrder(node.children[idx]);

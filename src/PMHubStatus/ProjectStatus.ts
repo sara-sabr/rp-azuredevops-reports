@@ -17,7 +17,7 @@ export class ProjectStatus extends WorkItemBase {
     /**
      * Risk level
      */
-    riskLevel:number = 0;
+    riskLevel:string = "";
 
     /**
      * The objective.
@@ -34,6 +34,11 @@ export class ProjectStatus extends WorkItemBase {
      */
     keyIssues:string = "";
 
+    /**
+     * The target date
+     */
+    targetDate?:Date;
+
     public populateFromWorkItem(workItem:WorkItem):void {
         super.populateFromWorkItem(workItem);
         this.title = workItem.fields[PMHubStatusConfiguration.getFieldTitle()];
@@ -41,5 +46,6 @@ export class ProjectStatus extends WorkItemBase {
         this.riskLevel = workItem.fields[PMHubStatusConfiguration.getFieldRisk()];
         this.action = workItem.fields[PMHubStatusConfiguration.getFieldAction()];
         this.objective = workItem.fields[PMHubStatusConfiguration.getFieldObjective()];
+        this.targetDate = workItem.fields[PMHubStatusConfiguration.getFieldTargetDate()];
     }
 }

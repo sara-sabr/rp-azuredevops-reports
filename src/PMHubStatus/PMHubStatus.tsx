@@ -3,9 +3,10 @@ import "./PMHubStatus.scss";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as SDK from "azure-devops-extension-sdk";
+import { format as formatDate } from 'date-fns'
 import { Page } from "azure-devops-ui/Page";
-import { Icon } from "azure-devops-ui/Icon";
-import { Card } from "azure-devops-ui/Card";
+import { Pill, PillSize, PillVariant } from "azure-devops-ui/Pill";
+import { IColor } from "azure-devops-ui/Utilities/Color";
 import {
   CustomHeader,
   HeaderDescription,
@@ -14,23 +15,26 @@ import {
   HeaderTitleRow,
   TitleSize
 } from "azure-devops-ui/Header";
+import {IStatusProps, Statuses, Status, StatusSize} from "azure-devops-ui/Status"
 import { Dropdown } from "azure-devops-ui/Dropdown";
 import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
-
-import { HeaderCommandBar } from "azure-devops-ui/HeaderCommandBar";
+import { HeaderCommandBar, toggleFullScreen } from "azure-devops-ui/HeaderCommandBar";
 import {commandBarItemsAdvanced} from './Header'
 import { Utils } from "../common/Utils";
 import { PMHubStatusConfiguration } from "./Configuration";
 import { ProjectStatus } from "./ProjectStatus";
+import { IPMHubStatusPage } from "./IPMHubStatusPage";
+import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import { TreeNode } from "../common/TreeNode";
+import { Constants } from "../common/Constants";
 
-
-class PMHubStatus extends React.Component<{}> {
+class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
   private statusReportSelection = new DropdownSelection();
+  private rowNumber:number = 1;
 
   constructor(props: {}) {
     super(props);
-    this.state = { data: [] };
+    this.state = { currentStatus: undefined };
   }
 
   public componentDidMount() {
@@ -43,7 +47,86 @@ class PMHubStatus extends React.Component<{}> {
    */
   private async loadData():Promise<void> {
     const queryLatestStatusResults = await Utils.executeTreeQuery(PMHubStatusConfiguration.getQueryForLatestStatus(), ProjectStatus);
-    this.setState({data: queryLatestStatusResults});
+    this.rowNumber = 1;
+    this.setState({currentStatus: queryLatestStatusResults});
+  }
+
+  /**
+   * Write out the status node.
+   *
+   * @param projectStatusNode the node to write
+   */
+  private writeStatusRow(projectStatusNode: TreeNode<ProjectStatus>):JSX.Element {
+    const rowData:ProjectStatus | undefined = projectStatusNode.data;
+
+    if (rowData === undefined) { return (<tr><td>No Data</td></tr>)}
+
+    return (<tr key={rowData.id}>
+      {/** Vision */
+        projectStatusNode.isTopLevelNode() && (
+          <td colSpan={3} className="vision">
+            {rowData.title}
+          </td>
+        )
+      }
+      {/** Epic - Risk Level */
+        !projectStatusNode.isTopLevelNode() && (
+          /** Risk Level */
+          <td className="statusColumn">
+            {this.writeColumnRisk(rowData.riskLevel, rowData.id)}
+          </td>
+        )
+      }
+      {/** Epic - Date  */
+        !projectStatusNode.isTopLevelNode() && (
+          /** Date */
+          <td>
+            {rowData.targetDate && (<span>{formatDate(rowData.targetDate, 'LLL d yyyy')}</span>)}
+          </td>
+        )
+      }
+      {/** Epic - Description  */
+        !projectStatusNode.isTopLevelNode() && (
+          /** Date */
+          <td>
+            <Pill className="margin-top-4 activityTitle margin-bottom-4" excludeFocusZone={true} excludeTabStop={true}>
+              Activity Area #{this.rowNumber++}: {rowData.title}
+            </Pill>
+            <p><b>Objective</b></p>
+            <p dangerouslySetInnerHTML={{__html: rowData.objective}}></p>
+            <p><b>Action/Status</b>: {rowData.status}</p>
+            <p dangerouslySetInnerHTML={{__html: rowData.action}}></p>
+          </td>
+        )
+      }
+      </tr>
+    )
+  }
+
+  private writeColumnRisk(riskLevel:string|undefined, id:number):JSX.Element {
+    let statusProp:IStatusProps = Statuses.Queued;
+    let statusText:string = "Pending";
+
+    if (riskLevel === Constants.WIT_RISK_HIGH) {
+      statusProp = Statuses.Failed;
+      statusText = "High"
+    } else if (riskLevel === Constants.WIT_RISK_MED) {
+      statusProp = Statuses.Warning;
+      statusText = "Medium"
+    } else if (riskLevel === Constants.WIT_RISK_LOW) {
+      statusProp = Statuses.Success;
+      statusText = "Low"
+    }
+
+    return (
+      <Status
+        {... statusProp}
+        key={id + ".status"}
+        size={StatusSize.l}
+        className="flex-self-center"
+        ariaLabel={statusText}
+      />
+    );
   }
 
   public render(): JSX.Element {
@@ -72,8 +155,9 @@ class PMHubStatus extends React.Component<{}> {
           </HeaderTitleArea>
           <HeaderCommandBar items={commandBarItemsAdvanced} />
         </CustomHeader>
-        <Card className="flex-grow">
-          <table className="flex-grow status-report-tables">
+        <div className="page-content-left page-content-right page-content-top">
+
+          <table className="status-report-tables">
             <thead>
               <tr>
                 <th className="statusColumn">Risk</th>
@@ -82,45 +166,27 @@ class PMHubStatus extends React.Component<{}> {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td className="statusColumn font-size-l">
-                  <Icon ariaLabel="High Risk" iconName="Error" className="risk-high" />
-                  <Icon ariaLabel="Medium Risk" iconName="Warning" className="risk-med" />
-                  <Icon ariaLabel="Low Risk" iconName="StatusCircleCheckmark" className="risk-low" />
-                </td>
-                <td className="dateColumn">April/May, 2021</td>
-                <td className="detailsColumn">
-                Activity Area #1:  Project 1 <br /> <br />
-                <b>Objective:</b>
-                <ul>
-                  <li>Demonstrate .</li>
-                  <li>Follow up :</li>
-                  <li>"Members recommended”</li>
-                </ul>
-                <b>Action/Status:</b>
-                <ul>
-                  <li>Identifying potential uses case / Underway</li>
-                </ul>
-                <b>Key Issues:</b>
-                <ul>
-                  <li>Limited capacity.</li>
-                </ul>
-                </td>
-              </tr>
-              <tr>
-                <td className="statusColumn">Green</td>
-                <td className="dateColumn">April/May, 2021</td>
-                <td className="detailsColumn">Project #2 </td>
-              </tr>
-              <tr>
-                <td className="statusColumn">Green</td>
-                <td className="dateColumn">April/May, 2021</td>
-                <td className="detailsColumn">Project #3 </td>
-              </tr>
+              {/** Print this on no data. */
+                this.state.currentStatus == undefined && (
+                  <tr>
+                    <td colSpan={3}>
+                      <div className="flex-row v-align-middle justify-center full-size">
+                        <Spinner size={SpinnerSize.large} label="Loading ..."/>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              }
+
+              {/** Status report with data populated. */
+                this.state.currentStatus !== undefined &&
+                TreeNode.walkTreePreOrder(this.state.currentStatus).map((value, index) => {
+                  return this.writeStatusRow(value);
+                })
+              }
             </tbody>
           </table>
-        </Card>
-
+        </div>
       </Page>
     );
   }
