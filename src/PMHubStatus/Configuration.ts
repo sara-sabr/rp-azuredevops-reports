@@ -7,13 +7,15 @@ import { Constants } from "../common/Constants"
  */
 export class PMHubStatusConfiguration {
 
+    private static readonly STATUS_REPORT_FOLDER = "Status Report" + Constants.DEFAULT_QUERIES_SEPERATOR;
+
     /**
      * Get the configuration for the latest status report.
      *
      * @returns the name of the query.
      */
     public static getQueryForLatestStatus():string {
-        return "Latest Status Report"
+        return PMHubStatusConfiguration.STATUS_REPORT_FOLDER + "Latest Status Report"
     }
 
     /**
@@ -22,7 +24,7 @@ export class PMHubStatusConfiguration {
      * @returns the name of the query.
      */
     public static getQueryImpediments():string {
-        return "Impediments"
+        return PMHubStatusConfiguration.STATUS_REPORT_FOLDER + "Impediments"
     }
 
     /**

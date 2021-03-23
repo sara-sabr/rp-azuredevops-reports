@@ -65,18 +65,6 @@ table.status-report-tables {
     border-color: gray;
 }
 
-table.status-report-tables span.risk-high {
-    color: $status-error-foreground;
-}
-
-table.status-report-tables span.risk-med {
-    color: $status-warning-foreground;
-}
-
-table.status-report-tables span.risk-low {
-    color: $status-success-foreground;
-}
-
 div.activityTitle {
     font-weight: bold;
 }
