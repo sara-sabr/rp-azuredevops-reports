@@ -22,6 +22,7 @@ jobs:
       - run: ./publish.sh
         env:
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.PAT_MARKETPLACE }}
+          DEPLOY: production
 
       - uses: actions/upload-artifact@v2
         with:
