@@ -1,9 +1,17 @@
 import { ProjectStatus } from "./ProjectStatus";
-import { TreeNode } from "../common/TreeNode";
+import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
 
 /**
  * Used by the status page to display current status and possible other statuses.
  */
 export interface IPMHubStatusPage {
-    currentStatus?: TreeNode<ProjectStatus, number> | undefined
+    /**
+     * Current result.
+     */
+    currentStatus?: SearchResultTreeNode<ProjectStatus, number> | undefined;
+
+    /**
+     * The query
+     */
+    queryUrl?:string;
 }

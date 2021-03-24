@@ -1,10 +1,9 @@
-import { IPMHubStatusPage } from "./IPMHubStatusPage";
-import { TreeNode } from "../common/TreeNode";
 import { ProjectStatus } from "./ProjectStatus";
 import { Utils } from "../common/Utils";
 import { PMHubStatusConfiguration } from "./Configuration";
 import { Impediments } from "./Impediments";
 import { Constants } from "../common/Constants";
+import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
 
 export class PMHubStatusUtils {
 
@@ -13,7 +12,7 @@ export class PMHubStatusUtils {
      *
      * @param currentStatus the current status.
      */
-    private static async populateImpediments(currentStatus: TreeNode<ProjectStatus, number>):Promise<void> {
+    private static async populateImpediments(currentStatus: SearchResultTreeNode<ProjectStatus, number>):Promise<void> {
         const nodeMap = currentStatus.nodeMap;
 
         if (nodeMap === undefined) {
@@ -21,9 +20,9 @@ export class PMHubStatusUtils {
         }
 
         // Get the list of impediments.
-        const impedimentsResults:TreeNode<Impediments, number> = await Utils.executeTreeQuery(PMHubStatusConfiguration.getQueryImpediments(), Impediments);
+        const impedimentsResults:SearchResultTreeNode<Impediments, number> = await Utils.executeTreeQuery(PMHubStatusConfiguration.getQueryImpediments(), Impediments);
         let relatedId:number;
-        let relatedNode:TreeNode<ProjectStatus, number> | undefined;
+        let relatedNode:SearchResultTreeNode<ProjectStatus, number> | undefined;
 
         for (let node of impedimentsResults.children) {
             if (node === undefined || node.data === undefined) {
@@ -53,9 +52,13 @@ export class PMHubStatusUtils {
      *
      * @returns the latest project statues.
      */
-    static async getLatestProjectStatuses(): Promise<TreeNode<ProjectStatus, number>> {
-        const projectStatus:TreeNode<ProjectStatus, number> = await Utils.executeTreeQuery(PMHubStatusConfiguration.getQueryForLatestStatus(), ProjectStatus);
-        await PMHubStatusUtils.populateImpediments(projectStatus);
+    static async getLatestProjectStatuses(): Promise<SearchResultTreeNode<ProjectStatus, number>> {
+        const projectStatus:SearchResultTreeNode<ProjectStatus, number> = await Utils.executeTreeQuery(PMHubStatusConfiguration.getQueryForLatestStatus(), ProjectStatus);
+
+        if (!projectStatus.isEmpty()) {
+            await PMHubStatusUtils.populateImpediments(projectStatus);
+        }
+
         return projectStatus;
     }
 }

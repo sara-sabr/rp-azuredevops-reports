@@ -5,8 +5,7 @@ import * as ReactDOM from "react-dom";
 import * as SDK from "azure-devops-extension-sdk";
 import { format as formatDate } from 'date-fns'
 import { Page } from "azure-devops-ui/Page";
-import { Pill, PillSize, PillVariant } from "azure-devops-ui/Pill";
-import { IColor } from "azure-devops-ui/Utilities/Color";
+import { Pill } from "azure-devops-ui/Pill";
 import {
   CustomHeader,
   HeaderDescription,
@@ -18,14 +17,16 @@ import {
 import {IStatusProps, Statuses, Status, StatusSize} from "azure-devops-ui/Status"
 import { Dropdown } from "azure-devops-ui/Dropdown";
 import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
-import { HeaderCommandBar, toggleFullScreen } from "azure-devops-ui/HeaderCommandBar";
+import { HeaderCommandBar } from "azure-devops-ui/HeaderCommandBar";
 import {commandBarItemsAdvanced} from './Header'
 import { ProjectStatus } from "./ProjectStatus";
 import { IPMHubStatusPage } from "./IPMHubStatusPage";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
-import { TreeNode } from "../common/TreeNode";
 import { Constants } from "../common/Constants";
 import { PMHubStatusUtils } from "./PMHubStatusUtils";
+import { ZeroData } from "azure-devops-ui/ZeroData";
+import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
+import { Utils } from "../common/Utils";
 
 class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
   private statusReportSelection = new DropdownSelection();
@@ -46,8 +47,12 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    */
   private async loadData():Promise<void> {
     const latestProjectStatus = await PMHubStatusUtils.getLatestProjectStatuses();
+    const queryUrl = await Utils.getQueryURL(latestProjectStatus.sourceQuery);
     this.rowNumber = 1;
-    this.setState({currentStatus: latestProjectStatus});
+    this.setState({
+      currentStatus: latestProjectStatus,
+      queryUrl: queryUrl
+    });
   }
 
   /**
@@ -55,7 +60,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    *
    * @param projectStatusNode the node to write
    */
-  private writeStatusRow(projectStatusNode: TreeNode<ProjectStatus,number>):JSX.Element {
+  private writeStatusRow(projectStatusNode: SearchResultTreeNode<ProjectStatus,number>):JSX.Element {
     const rowData:ProjectStatus | undefined = projectStatusNode.data;
 
     if (rowData === undefined) { return (<tr><td>No Data</td></tr>)}
@@ -192,10 +197,29 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
                   </tr>
                 )
               }
+              {/** Status report with no data found. */
+                this.state.currentStatus !== undefined && this.state.currentStatus.isEmpty() && (
+                  <tr>
+                    <td colSpan={3}>
+                      <ZeroData
+                        className="flex-row v-align-middle justify-center full-size"
+                        primaryText="No data found for this report."
+                        secondaryText={(<div>
+                          <p>
+                            Please ensure the <a href={this.state.queryUrl} target={"_top"}>{this.state.currentStatus.sourceQuery?.name}</a> query actually produces a result.
+                          </p>
+                        </div>)}
+
+                        imageAltText="No Data Image"
+                        imagePath="https://cdn.vsassets.io/v/M183_20210324.1/_content/Illustrations/general-no-results-found.svg"/>
+                    </td>
+                  </tr>
+                )
+              }
 
               {/** Status report with data populated. */
-                this.state.currentStatus !== undefined &&
-                TreeNode.walkTreePreOrder(this.state.currentStatus).map((value, index) => {
+                this.state.currentStatus !== undefined && !this.state.currentStatus.isEmpty() &&
+                SearchResultTreeNode.walkTreePreOrder(this.state.currentStatus).map((value, index) => {
                   return this.writeStatusRow(value);
                 })
               }
