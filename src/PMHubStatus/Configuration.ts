@@ -11,6 +11,25 @@ export class PMHubStatusConfiguration {
     private static readonly STATUS_REPORT_FOLDER = "Status Report";
 
     /**
+     * Prefix for grouping by field
+     */
+    public static readonly STATUS_REPORT_GROUPING_PREFIX_BY_FIELD = "field:";
+
+    /**
+     * Grouping by search hierachy.
+     */
+    public static readonly STATUS_REPORT_GROUPING_QUERY = "query";
+
+    /**
+     * Get the configuration for how the report will group entries.
+     *
+     * @returns the report grouping setting.
+     */
+    public static getStatusReportGrouping():string {
+        return this.STATUS_REPORT_GROUPING_PREFIX_BY_FIELD + Constants.WIT_FIELD_AREA_PATH;
+    }
+
+    /**
      * Get the configuration for the latest status report.
      *
      * @returns the name of the query.

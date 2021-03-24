@@ -101,6 +101,11 @@ export class Constants {
     static readonly WIT_FIELD_TYPE = "System.WorkItemType";
 
     /**
+     * The system name for area path.
+     */
+    static readonly WIT_FIELD_AREA_PATH = "System.AreaPath";
+
+    /**
      * The system name for the state changed date field.
      */
     static readonly WIT_FIELD_STATE_CHANGED = "Microsoft.VSTS.Common.StateChangeDate";
