@@ -3,8 +3,6 @@ name: Deploy Production
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
   build:
@@ -17,9 +15,14 @@ jobs:
         with:
           node-version: 12
 
-      - run: npm install
+      - run: npm ci
 
-      - run: npm run package
+      - run: npm run compile
+
+      - run: ./publish.sh
+        env:
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.PAT_MARKETPLACE }}
+          DEPLOY: production
 
       - uses: actions/upload-artifact@v2
         with:
