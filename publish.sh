@@ -4,7 +4,7 @@
 
 npm install -g tfx-cli
 
-if [ $DEPLOY == "production" ]
+if [ "$DEPLOY" = "production" ];
 then
    echo "Deploying Production"
    tfx extension publish --manifest-globs azure-devops-extension.json src/**/azure-devops-extension.json --overrides-file configs/release.json --output-path out -t $AZURE_DEVOPS_EXT_PAT
