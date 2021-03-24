@@ -1,4 +1,4 @@
-import { WorkItem } from "azure-devops-extension-api/WorkItemTracking";
+import { WorkItem, QueryHierarchyItem } from "azure-devops-extension-api/WorkItemTracking";
 import { Constants } from "./Constants";
 
 export abstract class WorkItemBase {

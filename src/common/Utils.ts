@@ -1,9 +1,9 @@
-import { WorkItemTrackingRestClient, QueryHierarchyItem, WorkItemQueryResult, WorkItemLink, WorkItemExpand, WorkItemErrorPolicy, WorkItem } from "azure-devops-extension-api/WorkItemTracking";
-import { getClient, CommonServiceIds, IProjectPageService } from "azure-devops-extension-api"
+import { WorkItemTrackingRestClient, QueryHierarchyItem, WorkItemQueryResult, WorkItemLink, WorkItemExpand, WorkItemErrorPolicy, WorkItem, QueryExpand } from "azure-devops-extension-api/WorkItemTracking";
+import { getClient, CommonServiceIds, IProjectPageService, IProjectInfo, ILocationService } from "azure-devops-extension-api"
 import { Constants } from "./Constants";
 import * as SDK from "azure-devops-extension-sdk";
-import { TreeNode } from "./TreeNode";
 import { WorkItemBase } from "./WorkItemBase";
+import { SearchResultTreeNode } from "./SearchResultTreeNode";
 
 
 /**
@@ -15,6 +15,35 @@ export class Utils {
      */
     static readonly WIT_API_CLIENT = getClient(WorkItemTrackingRestClient);
 
+    static BASE_URL:string;
+
+    /**
+     * Get the base url for this project
+     */
+    private static async getBaseUrl():Promise<string> {
+        if (this.BASE_URL === undefined) {
+            const locationService = await SDK.getService<ILocationService>(CommonServiceIds.LocationService);
+            const orgUrl = await locationService.getServiceLocation();
+            const projectName = await this.getProjectName();
+            this.BASE_URL = orgUrl + projectName;
+        }
+        return this.BASE_URL;
+    }
+
+    /**
+     * Get the query url.
+     *
+     * @param query the query
+     */
+    static async getQueryURL(query: QueryHierarchyItem | undefined):Promise<string> {
+        let url = await this.getBaseUrl();
+        if (query == undefined) {
+            throw new Error ("Query cannot be empty.")
+        }
+        url += "/_queries/query/" + query.id;
+        return url;
+    }
+
     /**
      * Get the query.
      *
@@ -22,8 +51,7 @@ export class Utils {
      */
     static async getQuery(name: string):Promise<QueryHierarchyItem> {
         const projectName = await this.getProjectName();
-        const queryFQN = this.buildQueryFQN(Constants.DEFAULT_QUERIES_SHARED_FOLDER, Constants.DEFAULT_QUERIES_EXTENSION_FOLDER, name);
-        return this.WIT_API_CLIENT.getQuery(projectName, queryFQN);
+        return this.WIT_API_CLIENT.getQuery(projectName, name);
     }
 
     /**
@@ -34,7 +62,7 @@ export class Utils {
      */
     static async executeTreeQuery<T extends WorkItemBase>(name:string,
         type: { new (): T }
-        ):Promise<TreeNode<T,number>> {
+        ):Promise<SearchResultTreeNode<T,number>> {
         const query = await this.getQuery(name);
 
         if (query.isFolder) {
@@ -42,55 +70,62 @@ export class Utils {
         }
 
         const projectName = await this.getProjectName();
-        const rootNode = new TreeNode<T,number>(undefined);
-        let currentNode:TreeNode<T,number>;
-        const nodeMap = new Map<number, TreeNode<T,number>>();
+        const rootNode = new SearchResultTreeNode<T,number>(undefined);
+        let currentNode:SearchResultTreeNode<T,number>;
+        const nodeMap = new Map<number, SearchResultTreeNode<T,number>>();
         let currentWorkItemLink:WorkItemLink;
         let data:T;
 
+        // Init the root node's data.
+        rootNode.populateNodeMap(nodeMap);
+        rootNode.sourceQuery = query;
+
+        // Get results.
         const results = await this.WIT_API_CLIENT.queryById(query.id);
-        // Loop over the results and create the tree.
-        for (let idx = 0; idx < results.workItemRelations.length; idx++) {
-            currentWorkItemLink = results.workItemRelations[idx];
-            data = new type();
-            data.id = currentWorkItemLink.target.id;
 
-            currentNode = new TreeNode<T,number>(data);
-            nodeMap.set(data.id, currentNode);
+        if (results.workItemRelations.length > 0) {
+            // Loop over the results and create the tree.
+            for (let idx = 0; idx < results.workItemRelations.length; idx++) {
+                currentWorkItemLink = results.workItemRelations[idx];
+                data = new type();
+                data.id = currentWorkItemLink.target.id;
 
-            if (currentWorkItemLink.rel === null) {
-                // Top level node.
-                rootNode.addChildren(currentNode);
-            } else if (currentWorkItemLink.rel === Constants.WIT_REL_CHILD ||
-                       currentWorkItemLink.rel === Constants.WIT_REL_RELATED){
-                // Has a parent and we should of seen it already.
-                nodeMap.get(currentWorkItemLink.source.id)?.addChildren(currentNode);
+                currentNode = new SearchResultTreeNode<T,number>(data);
+                nodeMap.set(data.id, currentNode);
+
+                if (currentWorkItemLink.rel === null) {
+                    // Top level node.
+                    rootNode.addChildren(currentNode);
+                } else if (currentWorkItemLink.rel === Constants.WIT_REL_CHILD ||
+                        currentWorkItemLink.rel === Constants.WIT_REL_RELATED){
+                    // Has a parent and we should of seen it already.
+                    nodeMap.get(currentWorkItemLink.source.id)?.addChildren(currentNode);
+                }
+            }
+
+            // Get the fields names.
+            const fieldNames:string[] = [];
+            for (let idx = 0; idx < results.columns.length; idx++) {
+                fieldNames.push(results.columns[idx].referenceName);
+            }
+
+            // Now populate the data as we want to bulk request the data.
+            let ids = Array.from(nodeMap.keys());
+            const workItemDataResults = await this.WIT_API_CLIENT.getWorkItemsBatch({
+                ids:ids,
+                fields: fieldNames,
+                $expand: WorkItemExpand.None,
+                asOf: new Date(),
+                errorPolicy: WorkItemErrorPolicy.Fail
+            }, projectName);
+
+            let workItem:WorkItem;
+            for (let idx = 0; idx < workItemDataResults.length; idx++) {
+                workItem = workItemDataResults[idx];
+                nodeMap.get(workItem.id)?.data?.populateFromWorkItem(workItem);
             }
         }
 
-        // Get the fields names.
-        const fieldNames:string[] = [];
-        for (let idx = 0; idx < results.columns.length; idx++) {
-            fieldNames.push(results.columns[idx].referenceName);
-        }
-
-        // Now populate the data as we want to bulk request the data.
-        let ids = Array.from(nodeMap.keys());
-        const workItemDataResults = await this.WIT_API_CLIENT.getWorkItemsBatch({
-            ids:ids,
-            fields: fieldNames,
-            $expand: WorkItemExpand.None,
-            asOf: new Date(),
-            errorPolicy: WorkItemErrorPolicy.Fail
-        }, projectName);
-
-        let workItem:WorkItem;
-        for (let idx = 0; idx < workItemDataResults.length; idx++) {
-            workItem = workItemDataResults[idx];
-            nodeMap.get(workItem.id)?.data?.populateFromWorkItem(workItem);
-        }
-
-        rootNode.populateNodeMap(nodeMap);
         return rootNode;
     }
 
@@ -99,7 +134,7 @@ export class Utils {
      *
      * @param paths the path location.
      */
-    private static buildQueryFQN(... paths:string[]):string {
+    public static buildQueryFQN(... paths:string[]):string {
         let buffer = "";
         for (let idx = 0; idx < paths.length; idx++) {
             if (idx > 0) {
@@ -118,8 +153,7 @@ export class Utils {
      * @returns the current project name.
      */
     static async getProjectName():Promise<string> {
-        const projectService = await this.getProjectService();
-        const projectInfo = await projectService.getProject();
+        const projectInfo = await this.getProject();
 
         if (projectInfo) {
             return projectInfo.name;
@@ -129,12 +163,13 @@ export class Utils {
     }
 
     /**
-     * Get the project service which provides access to the current project.
+     * Get the project information which provides access to the current project associated to this page.
      *
-     * @returns the project service
+     * @returns the project or undefined if not found.
      */
-    static async getProjectService():Promise<IProjectPageService> {
-        return SDK.getService<IProjectPageService>(CommonServiceIds.ProjectPageService);
+    static async getProject():Promise<IProjectInfo | undefined> {
+        const projectService = await SDK.getService<IProjectPageService>(CommonServiceIds.ProjectPageService);
+        return projectService.getProject();
     }
 
     /**

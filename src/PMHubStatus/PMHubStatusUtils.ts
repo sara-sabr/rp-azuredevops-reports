@@ -1,19 +1,138 @@
-import { IPMHubStatusPage } from "./IPMHubStatusPage";
-import { TreeNode } from "../common/TreeNode";
 import { ProjectStatus } from "./ProjectStatus";
 import { Utils } from "../common/Utils";
 import { PMHubStatusConfiguration } from "./Configuration";
 import { Impediments } from "./Impediments";
 import { Constants } from "../common/Constants";
+import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
+import { QueryType } from "azure-devops-extension-api/WorkItemTracking";
 
 export class PMHubStatusUtils {
+
+    /**
+     * Group the results by configuration first and if not configured, then use the search results as a grouping.
+     *
+     * Group logic is as follows:
+     * 1. Look at configuration to see how to group
+     * 2. Look to see if search query is a tree result type and if so, use top nodes as group
+     * 3. Finally, use area path as grouping.
+     *
+     * @param currentStatus the current status report.
+     */
+    public static groupResultData(currentStatus:SearchResultTreeNode<ProjectStatus, number>):Map<string, SearchResultTreeNode<ProjectStatus, number>[]> {
+
+        if (PMHubStatusConfiguration.getStatusReportGrouping().startsWith(PMHubStatusConfiguration.STATUS_REPORT_GROUPING_PREFIX_BY_FIELD)) {
+            if (currentStatus.sourceQuery?.queryType === QueryType.OneHop) {
+                return this.groupResultDataByFieldWhenTree(currentStatus, Constants.WIT_FIELD_AREA_PATH);
+            }
+        }
+        else if (PMHubStatusConfiguration.getStatusReportGrouping() === PMHubStatusConfiguration.STATUS_REPORT_GROUPING_QUERY) {
+            if (currentStatus.sourceQuery?.queryType === QueryType.OneHop) {
+                return this.groupResultDataByTopNodes(currentStatus);
+            }
+        }
+
+        return new Map();
+    }
+
+    /**
+     * Get the top level field path as that what we care for.
+     *
+     * @param areaPath the area path
+     */
+    private static getTopLevelAreaPath(areaPath:string):string {
+        if (areaPath === undefined || areaPath.length === 0) {
+            return "";
+        }
+
+        let slashIndex = areaPath.indexOf('\\');
+
+        if (slashIndex >= 0) {
+            areaPath = areaPath.substring(slashIndex + 1);
+            slashIndex = areaPath.indexOf('\\');
+
+            if (slashIndex >= 0) {
+                areaPath = areaPath.substring(0, slashIndex);
+            }
+        }
+
+        return areaPath;
+    }
+
+    /**
+     * Group the data by the child nodes based on a field.
+     *
+     * @param currentStatus the current status report.
+     * @param fieldName the field name
+     */
+    private static groupResultDataByFieldWhenTree(currentStatus:SearchResultTreeNode<ProjectStatus, number>, fieldName:string):Map<string, SearchResultTreeNode<ProjectStatus, number>[]> {
+        const grouping:Map<string, SearchResultTreeNode<ProjectStatus, number>[]> = new Map();
+        let dataArray:SearchResultTreeNode<ProjectStatus, number>[] | undefined;
+        let fieldValue;
+
+        for (let node of currentStatus.children) {
+            if (node.data) {
+                for (let child of node.children) {
+                    fieldValue = child.data?.sourceWorkItem?.fields[fieldName];
+                    if (fieldValue) {
+                        fieldValue = this.getTopLevelAreaPath(fieldValue);
+                        dataArray = grouping.get(fieldValue);
+
+                        if (dataArray === undefined) {
+                            dataArray = [];
+                            grouping.set(fieldValue, dataArray);
+                        }
+
+                        dataArray.push(child);
+                    }
+
+                }
+            }
+        }
+
+        return grouping;
+    }
+
+    /**
+     * Group the data by the top level nodes.
+     *
+     * @param currentStatus the current status report.
+     */
+    private static groupResultDataByTopNodes(currentStatus:SearchResultTreeNode<ProjectStatus, number>):Map<string, SearchResultTreeNode<ProjectStatus, number>[]> {
+        const grouping:Map<string, SearchResultTreeNode<ProjectStatus, number>[]> = new Map();
+        let dataArray:SearchResultTreeNode<ProjectStatus, number>[];
+
+        for (let node of currentStatus.children) {
+            if (node.data) {
+                dataArray = [];
+                grouping.set(node.data.title, dataArray);
+
+                for (let child of node.children) {
+                    dataArray.push(child);
+                }
+            }
+        }
+
+        return grouping;
+    }
+
+    /**
+     * Group the data by the field.
+     *
+     * @param currentStatus the current status report.
+     */
+    private static groupResultByField(currentStatus:SearchResultTreeNode<ProjectStatus, number>, fieldName:string):Map<string, SearchResultTreeNode<ProjectStatus, number>[]> {
+        const grouping:Map<string, SearchResultTreeNode<ProjectStatus, number>[]> = new Map();
+
+
+        return grouping;
+    }
 
     /**
      * Populate the impediments for all projects referenced.
      *
      * @param currentStatus the current status.
      */
-    private static async populateImpediments(currentStatus: TreeNode<ProjectStatus, number>):Promise<void> {
+    private static async populateImpediments(currentStatus: SearchResultTreeNode<ProjectStatus, number>):Promise<void> {
         const nodeMap = currentStatus.nodeMap;
 
         if (nodeMap === undefined) {
@@ -21,9 +140,9 @@ export class PMHubStatusUtils {
         }
 
         // Get the list of impediments.
-        const impedimentsResults:TreeNode<Impediments, number> = await Utils.executeTreeQuery(PMHubStatusConfiguration.getQueryImpediments(), Impediments);
+        const impedimentsResults:SearchResultTreeNode<Impediments, number> = await Utils.executeTreeQuery(PMHubStatusConfiguration.getQueryImpediments(), Impediments);
         let relatedId:number;
-        let relatedNode:TreeNode<ProjectStatus, number> | undefined;
+        let relatedNode:SearchResultTreeNode<ProjectStatus, number> | undefined;
 
         for (let node of impedimentsResults.children) {
             if (node === undefined || node.data === undefined) {
@@ -53,9 +172,13 @@ export class PMHubStatusUtils {
      *
      * @returns the latest project statues.
      */
-    static async getLatestProjectStatuses(): Promise<TreeNode<ProjectStatus, number>> {
-        const projectStatus:TreeNode<ProjectStatus, number> = await Utils.executeTreeQuery(PMHubStatusConfiguration.getQueryForLatestStatus(), ProjectStatus);
-        await PMHubStatusUtils.populateImpediments(projectStatus);
+    static async getLatestProjectStatuses(): Promise<SearchResultTreeNode<ProjectStatus, number>> {
+        const projectStatus:SearchResultTreeNode<ProjectStatus, number> = await Utils.executeTreeQuery(PMHubStatusConfiguration.getQueryForLatestStatus(), ProjectStatus);
+
+        if (!projectStatus.isEmpty()) {
+            await PMHubStatusUtils.populateImpediments(projectStatus);
+        }
+
         return projectStatus;
     }
 }

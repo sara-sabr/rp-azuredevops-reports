@@ -5,8 +5,7 @@ import * as ReactDOM from "react-dom";
 import * as SDK from "azure-devops-extension-sdk";
 import { format as formatDate } from 'date-fns'
 import { Page } from "azure-devops-ui/Page";
-import { Pill, PillSize, PillVariant } from "azure-devops-ui/Pill";
-import { IColor } from "azure-devops-ui/Utilities/Color";
+import { Pill } from "azure-devops-ui/Pill";
 import {
   CustomHeader,
   HeaderDescription,
@@ -18,14 +17,16 @@ import {
 import {IStatusProps, Statuses, Status, StatusSize} from "azure-devops-ui/Status"
 import { Dropdown } from "azure-devops-ui/Dropdown";
 import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
-import { HeaderCommandBar, toggleFullScreen } from "azure-devops-ui/HeaderCommandBar";
+import { HeaderCommandBar } from "azure-devops-ui/HeaderCommandBar";
 import {commandBarItemsAdvanced} from './Header'
 import { ProjectStatus } from "./ProjectStatus";
 import { IPMHubStatusPage } from "./IPMHubStatusPage";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
-import { TreeNode } from "../common/TreeNode";
 import { Constants } from "../common/Constants";
 import { PMHubStatusUtils } from "./PMHubStatusUtils";
+import { ZeroData } from "azure-devops-ui/ZeroData";
+import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
+import { Utils } from "../common/Utils";
 
 class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
   private statusReportSelection = new DropdownSelection();
@@ -46,8 +47,14 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    */
   private async loadData():Promise<void> {
     const latestProjectStatus = await PMHubStatusUtils.getLatestProjectStatuses();
+    const queryUrl = await Utils.getQueryURL(latestProjectStatus.sourceQuery);
+    const groupedData = PMHubStatusUtils.groupResultData(latestProjectStatus);
     this.rowNumber = 1;
-    this.setState({currentStatus: latestProjectStatus});
+    this.setState({
+      currentStatus: groupedData,
+      queryUrl: queryUrl,
+      sourceQuery: latestProjectStatus.sourceQuery
+    });
   }
 
   /**
@@ -55,23 +62,16 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    *
    * @param projectStatusNode the node to write
    */
-  private writeStatusRow(projectStatusNode: TreeNode<ProjectStatus,number>):JSX.Element {
+  private writeStatusRow(projectStatusNode: SearchResultTreeNode<ProjectStatus,number>):JSX.Element {
     const rowData:ProjectStatus | undefined = projectStatusNode.data;
 
     if (rowData === undefined) { return (<tr><td>No Data</td></tr>)}
 
-    return (<tr key={rowData.id}>
-      {/** Vision */
-        projectStatusNode.isTopLevelNode() && (
-          <td colSpan={3} className="vision">
-            {rowData.title}
-          </td>
-        )
-      }
+    return (<tr key={rowData.id} className="status-report-entry-row">
       {/** Epic - Risk Level */
         !projectStatusNode.isTopLevelNode() && (
           /** Risk Level */
-          <td className="statusColumn">
+          <td className="status-report-col-status">
             {this.writeColumnRisk(rowData.riskLevel, rowData.id)}
           </td>
         )
@@ -109,6 +109,26 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
         )
       }
       </tr>
+    )
+  }
+
+  /**
+   * Write the group.
+   *
+   * @param groupTitle the group title
+   */
+  private writeGroup(groupTitle: string):JSX.Element {
+    return (
+      <tbody key={groupTitle}>
+        <tr className="status-report-grouped-header-row">
+            <th colSpan={3}>
+              {groupTitle}
+            </th>
+        </tr>
+        {this.state.currentStatus?.get(groupTitle)?.map((value, index) => {
+          return this.writeStatusRow(value);
+        })}
+      </tbody>
     )
   }
 
@@ -174,32 +194,53 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
 
           <table className="status-report-tables">
             <thead>
-              <tr>
-                <th className="statusColumn">Risk</th>
-                <th className="dateColumn">Estimated Due Date</th>
-                <th className="detailsColumn">Details</th>
+              <tr className="status-report-header-row">
+                <th className="status-report-col-status">Risk</th>
+                <th className="status-report-col-estimate-date">Estimated Due Date</th>
+                <th className="status-report-col-details">Details</th>
               </tr>
             </thead>
-            <tbody>
               {/** Print this on no data. */
                 this.state.currentStatus == undefined && (
-                  <tr>
-                    <td colSpan={3}>
-                      <div className="flex-row v-align-middle justify-center full-size">
-                        <Spinner size={SpinnerSize.large} label="Loading ..."/>
-                      </div>
-                    </td>
-                  </tr>
+                  <tbody>
+                    <tr>
+                      <td colSpan={3}>
+                        <div className="flex-row v-align-middle justify-center full-size">
+                          <Spinner size={SpinnerSize.large} label="Loading ..."/>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                )
+              }
+              {/** Status report with no data found. */
+                this.state.currentStatus !== undefined && this.state.currentStatus.size === 0 && (
+                  <tbody>
+                    <tr>
+                      <td colSpan={3}>
+                        <ZeroData
+                          className="flex-row v-align-middle justify-center full-size"
+                          primaryText="No data found for this report."
+                          secondaryText={(<div>
+                            <p>
+                              Please ensure the <a href={this.state.queryUrl} target={"_top"}>{this.state.sourceQuery?.name}</a> query actually produces a result.
+                            </p>
+                          </div>)}
+
+                          imageAltText="No Data Image"
+                          imagePath="https://cdn.vsassets.io/v/M183_20210324.1/_content/Illustrations/general-no-results-found.svg"/>
+                      </td>
+                    </tr>
+                  </tbody>
                 )
               }
 
               {/** Status report with data populated. */
-                this.state.currentStatus !== undefined &&
-                TreeNode.walkTreePreOrder(this.state.currentStatus).map((value, index) => {
-                  return this.writeStatusRow(value);
-                })
+                this.state.currentStatus !== undefined && this.state.currentStatus.size >= 0 && (
+                [...this.state.currentStatus].map(entry => {
+                  return this.writeGroup(entry[0]);
+                }))
               }
-            </tbody>
           </table>
         </div>
       </Page>

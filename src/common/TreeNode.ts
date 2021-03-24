@@ -56,8 +56,26 @@ export class TreeNode<T,Y> {
         return this.parent !== undefined && this.parent.parent == undefined;
     }
 
+    /**
+     * Populate the node map for the root node.
+     *
+     * @param nodeMap the node map of all nodes in the tree.
+     */
     public populateNodeMap(nodeMap:Map<Y, TreeNode<T,Y>>):void {
         this.nodeMap = nodeMap;
+    }
+
+    /**
+     * Check if empty result.
+     *
+     * @returns true when the tree contains no nodes.
+     */
+    public isEmpty():boolean {
+        if (this.children) {
+            return this.children.length === 0;
+        }
+
+        return true;
     }
 
     /**
