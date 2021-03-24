@@ -15,9 +15,9 @@ jobs:
         with:
           node-version: 12
 
-      - run: npm install
+      - run: npm run compile
 
-      - run: AZURE_DEVOPS_EXT_PAT=$AZURE_DEVOPS_EXT_PAT npm run publish-github:dev
+      - run: ./publish.sh
         env:
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.PAT_MARKETPLACE }}
 
