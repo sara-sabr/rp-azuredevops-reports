@@ -23,30 +23,38 @@ table.status-report-tables tr {
     border-collapse: collapse;
 }
 
-table.status-report-tables th {
+table.status-report-tables tr.status-report-header-row th {
     color: white;
     background-color: #0072C1;
 }
 
-table.status-report-tables td.vision {
+table.status-report-tables tr.status-report-grouped-header-row th {
     color: black;
     background-color: #A3C6E3;
+    text-align: left;
+    padding-left: 4px;
 }
 
-table.status-report-tables th.statusColumn,
-table.status-report-tables td.statusColumn {
+table.status-report-tables tr.status-report-entry-row td {
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    padding: 4px;
+}
+
+table.status-report-tables th.status-report-col-status,
+table.status-report-tables td.status-report-col-status {
     width: 5%;
     text-align: center;
 }
 
-table.status-report-tables th.dateColumn,
-table.status-report-tables td.dateColumn {
+table.status-report-tables th.status-report-col-estimate-date,
+table.status-report-tables td.status-report-col-estimate-date {
     width: 10%;
     text-align: left;
 }
 
-table.status-report-tables th.detailsColumn,
-table.status-report-tables td.detailsColumn {
+table.status-report-tables th.status-report-col-details,
+table.status-report-tables td.status-report-col-details {
     width: 85%;
     text-align: left;
 }
