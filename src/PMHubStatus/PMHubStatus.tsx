@@ -63,7 +63,8 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
     this.setState({
       currentStatus: groupedData,
       queryUrl: queryUrl,
-      sourceQuery: latestProjectStatus.sourceQuery
+      sourceQuery: latestProjectStatus.sourceQuery,
+      reportDate: latestProjectStatus.asOf
     });
   }
 

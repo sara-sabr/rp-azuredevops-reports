@@ -5,7 +5,8 @@ import {
   WorkItemErrorPolicy,
   WorkItem,
   WorkItemReference,
-  QueryResultType
+  QueryResultType,
+  QueryExpand
 } from "azure-devops-extension-api/WorkItemTracking";
 import { Constants } from "./Constants";
 import { WorkItemBase } from "./WorkItemBase";
@@ -39,7 +40,7 @@ export class SearchUtils {
    */
   static async getQuery(name: string): Promise<QueryHierarchyItem> {
     const projectName = await ProjectUtils.getProjectName();
-    return ProjectUtils.WIT_API_CLIENT.getQuery(projectName, name);
+    return ProjectUtils.WIT_API_CLIENT.getQuery(projectName, name, QueryExpand.Wiql);
   }
 
   /**
@@ -47,10 +48,12 @@ export class SearchUtils {
    *
    * @param name the query name found inside the configuration folder.
    * @param type the class definition of results expected
+   * @param asOf query history if specified
    */
   static async executeQuery<T extends WorkItemBase>(
     name: string,
-    type: { new (): T }
+    type: { new (): T },
+    asOf?: Date
   ): Promise<SearchResultTreeNode<T, number>> {
     const query = await this.getQuery(name);
 
@@ -67,8 +70,16 @@ export class SearchUtils {
     rootNode.populateNodeMap(nodeMap);
     rootNode.sourceQuery = query;
 
+    const projectName = await ProjectUtils.getProjectName();
+    let wiql = query.wiql;
+
+    if (asOf) {
+      wiql +=  " ASOF '" + asOf.toISOString() + "'";
+    }
+
     // Get results.
-    const results = await ProjectUtils.WIT_API_CLIENT.queryById(query.id);
+    const results = await ProjectUtils.WIT_API_CLIENT.queryByWiql({query: wiql}, projectName);
+    rootNode.asOf = results.asOf;
 
     if (results.queryResultType === QueryResultType.WorkItem) {
       this.processWorkItem(nodeMap, results.workItems, rootNode, type);
@@ -82,7 +93,6 @@ export class SearchUtils {
     }
 
     if (nodeMap.size > 0) {
-      const projectName = await ProjectUtils.getProjectName();
 
       // Get the fields names.
       const fieldNames: string[] = [];
@@ -97,7 +107,7 @@ export class SearchUtils {
           ids: ids,
           fields: fieldNames,
           $expand: WorkItemExpand.None,
-          asOf: new Date(),
+          asOf: results.asOf,
           errorPolicy: WorkItemErrorPolicy.Fail
         },
         projectName

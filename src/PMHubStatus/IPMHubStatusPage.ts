@@ -22,4 +22,9 @@ export interface IPMHubStatusPage {
    * The query
    */
   queryUrl?: string;
+
+  /**
+   * Report Date.
+   */
+  reportDate?: Date | undefined;
 }

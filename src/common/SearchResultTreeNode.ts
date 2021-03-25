@@ -10,6 +10,11 @@ export class SearchResultTreeNode<T, Y> extends TreeNode<T, Y> {
    */
   sourceQuery?: QueryHierarchyItem;
 
+  /**.
+   * The date of the results.
+   */
+  asOf?: Date;
+
   /**
    * Create a tree node.
    *
