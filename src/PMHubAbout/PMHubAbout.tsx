@@ -7,6 +7,9 @@ import { Header } from "azure-devops-ui/Header";
 import { Page } from "azure-devops-ui/Page";
 import { ZeroData } from "azure-devops-ui/ZeroData";
 
+/**
+ * The about page.
+ */
 class PMHubAbout extends React.Component<{}> {
   constructor(props: {}) {
     super(props);

@@ -6,6 +6,9 @@ import { Constants } from "../common/Constants";
 import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
 import { QueryType } from "azure-devops-extension-api/WorkItemTracking";
 
+/**
+ * Utility methods for project status page.
+ */
 export class PMHubStatusUtils {
   /**
    * Group the results by configuration first and if not configured, then use the search results as a grouping.

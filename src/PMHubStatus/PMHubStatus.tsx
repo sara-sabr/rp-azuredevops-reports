@@ -33,6 +33,9 @@ import { ZeroData } from "azure-devops-ui/ZeroData";
 import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
 import { Utils } from "../common/Utils";
 
+/**
+ * The status report page.
+ */
 class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
   private statusReportSelection = new DropdownSelection();
   private rowNumber: number = 1;
