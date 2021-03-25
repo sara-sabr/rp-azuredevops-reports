@@ -19,19 +19,24 @@ export class PMHubStatusUtils {
      * @param currentStatus the current status report.
      */
     public static groupResultData(currentStatus:SearchResultTreeNode<ProjectStatus, number>):Map<string, SearchResultTreeNode<ProjectStatus, number>[]> {
+        const reportGrouping = PMHubStatusConfiguration.getStatusReportGrouping();
 
-        if (PMHubStatusConfiguration.getStatusReportGrouping().startsWith(PMHubStatusConfiguration.STATUS_REPORT_GROUPING_PREFIX_BY_FIELD)) {
+        if (reportGrouping.startsWith(PMHubStatusConfiguration.STATUS_REPORT_GROUPING_PREFIX_BY_FIELD)) {
+            const fieldName = reportGrouping.substring(PMHubStatusConfiguration.STATUS_REPORT_GROUPING_PREFIX_BY_FIELD.length);
             if (currentStatus.sourceQuery?.queryType === QueryType.OneHop) {
-                return this.groupResultDataByFieldWhenTree(currentStatus, Constants.WIT_FIELD_AREA_PATH);
+                return this.groupResultDataByFieldWhenTree(currentStatus, fieldName);
+            } else if (currentStatus.sourceQuery?.queryType === QueryType.Flat) {
+                return this.groupResultDataByFieldWhenFlat(currentStatus, fieldName);
             }
         }
-        else if (PMHubStatusConfiguration.getStatusReportGrouping() === PMHubStatusConfiguration.STATUS_REPORT_GROUPING_QUERY) {
+        else if (reportGrouping === PMHubStatusConfiguration.STATUS_REPORT_GROUPING_QUERY) {
             if (currentStatus.sourceQuery?.queryType === QueryType.OneHop) {
                 return this.groupResultDataByTopNodes(currentStatus);
             }
         }
 
-        return new Map();
+        // Default.
+        return this.groupResultDataByFieldWhenFlat(currentStatus, Constants.WIT_FIELD_AREA_PATH);
     }
 
     /**
@@ -59,6 +64,53 @@ export class PMHubStatusUtils {
     }
 
     /**
+     * Helper method for grouping by field name.
+     *
+     * @param children the current children being iterated.
+     * @param grouping the grouping
+     * @param fieldName the field name
+     */
+    private static groupResultDataByFieldHelper(
+        children: SearchResultTreeNode<ProjectStatus, number>[],
+        grouping:Map<string, SearchResultTreeNode<ProjectStatus, number>[]>,
+        fieldName:string
+        ):void {
+
+        let fieldValue;
+        let dataArray:SearchResultTreeNode<ProjectStatus, number>[] | undefined;
+
+        for (let child of children) {
+            fieldValue = child.data?.sourceWorkItem?.fields[fieldName];
+            if (fieldValue) {
+                if (fieldName === Constants.WIT_FIELD_AREA_PATH) {
+                    fieldValue = this.getTopLevelAreaPath(fieldValue);
+                }
+                dataArray = grouping.get(fieldValue);
+
+                if (dataArray === undefined) {
+                    dataArray = [];
+                    grouping.set(fieldValue, dataArray);
+                }
+
+                dataArray.push(child);
+            }
+        }
+    }
+
+    /**
+     * Group the data by the child nodes based on a field.
+     *
+     * @param currentStatus the current status report.
+     * @param fieldName the field name
+     */
+    private static groupResultDataByFieldWhenFlat(currentStatus:SearchResultTreeNode<ProjectStatus, number>, fieldName:string):Map<string, SearchResultTreeNode<ProjectStatus, number>[]> {
+        const grouping:Map<string, SearchResultTreeNode<ProjectStatus, number>[]> = new Map();
+
+        this.groupResultDataByFieldHelper(currentStatus.children, grouping, fieldName);
+        return grouping;
+    }
+
+    /**
      * Group the data by the child nodes based on a field.
      *
      * @param currentStatus the current status report.
@@ -66,26 +118,10 @@ export class PMHubStatusUtils {
      */
     private static groupResultDataByFieldWhenTree(currentStatus:SearchResultTreeNode<ProjectStatus, number>, fieldName:string):Map<string, SearchResultTreeNode<ProjectStatus, number>[]> {
         const grouping:Map<string, SearchResultTreeNode<ProjectStatus, number>[]> = new Map();
-        let dataArray:SearchResultTreeNode<ProjectStatus, number>[] | undefined;
-        let fieldValue;
 
         for (let node of currentStatus.children) {
             if (node.data) {
-                for (let child of node.children) {
-                    fieldValue = child.data?.sourceWorkItem?.fields[fieldName];
-                    if (fieldValue) {
-                        fieldValue = this.getTopLevelAreaPath(fieldValue);
-                        dataArray = grouping.get(fieldValue);
-
-                        if (dataArray === undefined) {
-                            dataArray = [];
-                            grouping.set(fieldValue, dataArray);
-                        }
-
-                        dataArray.push(child);
-                    }
-
-                }
+                this.groupResultDataByFieldHelper(node.children, grouping, fieldName);
             }
         }
 
@@ -111,18 +147,6 @@ export class PMHubStatusUtils {
                 }
             }
         }
-
-        return grouping;
-    }
-
-    /**
-     * Group the data by the field.
-     *
-     * @param currentStatus the current status report.
-     */
-    private static groupResultByField(currentStatus:SearchResultTreeNode<ProjectStatus, number>, fieldName:string):Map<string, SearchResultTreeNode<ProjectStatus, number>[]> {
-        const grouping:Map<string, SearchResultTreeNode<ProjectStatus, number>[]> = new Map();
-
 
         return grouping;
     }

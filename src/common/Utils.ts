@@ -1,4 +1,4 @@
-import { WorkItemTrackingRestClient, QueryHierarchyItem, WorkItemQueryResult, WorkItemLink, WorkItemExpand, WorkItemErrorPolicy, WorkItem, QueryExpand } from "azure-devops-extension-api/WorkItemTracking";
+import { WorkItemTrackingRestClient, QueryHierarchyItem, WorkItemQueryResult, WorkItemLink, WorkItemExpand, WorkItemErrorPolicy, WorkItem, QueryExpand, QueryType, WorkItemReference, QueryResultType } from "azure-devops-extension-api/WorkItemTracking";
 import { getClient, CommonServiceIds, IProjectPageService, IProjectInfo, ILocationService } from "azure-devops-extension-api"
 import { Constants } from "./Constants";
 import * as SDK from "azure-devops-extension-sdk";
@@ -69,12 +69,8 @@ export class Utils {
             throw new Error ("The specified query is a folder and not an actual query.");
         }
 
-        const projectName = await this.getProjectName();
         const rootNode = new SearchResultTreeNode<T,number>(undefined);
-        let currentNode:SearchResultTreeNode<T,number>;
         const nodeMap = new Map<number, SearchResultTreeNode<T,number>>();
-        let currentWorkItemLink:WorkItemLink;
-        let data:T;
 
         // Init the root node's data.
         rootNode.populateNodeMap(nodeMap);
@@ -83,25 +79,14 @@ export class Utils {
         // Get results.
         const results = await this.WIT_API_CLIENT.queryById(query.id);
 
-        if (results.workItemRelations.length > 0) {
-            // Loop over the results and create the tree.
-            for (let idx = 0; idx < results.workItemRelations.length; idx++) {
-                currentWorkItemLink = results.workItemRelations[idx];
-                data = new type();
-                data.id = currentWorkItemLink.target.id;
+        if (results.queryResultType === QueryResultType.WorkItem) {
+            this.processWorkItem(nodeMap, results.workItems, rootNode, type);
+        } else {
+            this.processWorkItemReference(nodeMap, results.workItemRelations, rootNode, type);
+        }
 
-                currentNode = new SearchResultTreeNode<T,number>(data);
-                nodeMap.set(data.id, currentNode);
-
-                if (currentWorkItemLink.rel === null) {
-                    // Top level node.
-                    rootNode.addChildren(currentNode);
-                } else if (currentWorkItemLink.rel === Constants.WIT_REL_CHILD ||
-                        currentWorkItemLink.rel === Constants.WIT_REL_RELATED){
-                    // Has a parent and we should of seen it already.
-                    nodeMap.get(currentWorkItemLink.source.id)?.addChildren(currentNode);
-                }
-            }
+        if (nodeMap.size > 0) {
+            const projectName = await this.getProjectName();
 
             // Get the fields names.
             const fieldNames:string[] = [];
@@ -127,6 +112,69 @@ export class Utils {
         }
 
         return rootNode;
+    }
+
+
+    /**
+     * Process results when it is work item reference. Usually a flat result.
+     *
+     * @param nodeMap the node map
+     * @param resultsValues the search result
+     * @param rootNode the root node
+     * @param type the type to instantiate
+     */
+    private static processWorkItem<T extends WorkItemBase>(nodeMap: Map<number, SearchResultTreeNode<T,number>>,
+        resultsValues: WorkItemReference[],
+        rootNode: SearchResultTreeNode<T,number>,
+        type: { new (): T }):void {
+        let workItemReference:WorkItemReference;
+        let data:T;
+        let currentNode:SearchResultTreeNode<T,number>;
+
+        // Loop over the results and create the tree.
+        for (let idx = 0; idx < resultsValues.length; idx++) {
+            workItemReference = resultsValues[idx];
+            data = new type();
+            data.id = workItemReference.id;
+            currentNode = new SearchResultTreeNode<T,number>(data);
+            nodeMap.set(data.id, currentNode);
+            rootNode.addChildren(currentNode);
+        }
+    }
+
+    /**
+     * Process results when it is a work item link. Usually a tree result.
+     *
+     * @param nodeMap the node map
+     * @param resultsValues the search result
+     * @param rootNode the root node
+     * @param type the type to instantiate
+     */
+    private static processWorkItemReference<T extends WorkItemBase>(nodeMap: Map<number, SearchResultTreeNode<T,number>>,
+                                      resultsValues: WorkItemLink[],
+                                      rootNode: SearchResultTreeNode<T,number>,
+                                      type: { new (): T }):void {
+        let currentWorkItemLink:WorkItemLink;
+        let data:T;
+        let currentNode:SearchResultTreeNode<T,number>;
+
+        // Loop over the results and create the tree.
+        for (let idx = 0; idx < resultsValues.length; idx++) {
+            currentWorkItemLink = resultsValues[idx];
+            data = new type();
+            data.id = currentWorkItemLink.target.id;
+            currentNode = new SearchResultTreeNode<T,number>(data);
+            nodeMap.set(data.id, currentNode);
+
+            if (currentWorkItemLink.rel === null) {
+                // Top level node.
+                rootNode.addChildren(currentNode);
+            } else if (currentWorkItemLink.rel === Constants.WIT_REL_CHILD ||
+                    currentWorkItemLink.rel === Constants.WIT_REL_RELATED){
+                // Has a parent and we should of seen it already.
+                nodeMap.get(currentWorkItemLink.source.id)?.addChildren(currentNode);
+            }
+        }
     }
 
     /**

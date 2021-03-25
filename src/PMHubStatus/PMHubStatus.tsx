@@ -66,27 +66,23 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
     const rowData:ProjectStatus | undefined = projectStatusNode.data;
 
     if (rowData === undefined) { return (<tr><td>No Data</td></tr>)}
-
     return (<tr key={rowData.id} className="status-report-entry-row">
       {/** Epic - Risk Level */
-        !projectStatusNode.isTopLevelNode() && (
-          /** Risk Level */
+        (
           <td className="status-report-col-status">
             {this.writeColumnRisk(rowData.riskLevel, rowData.id)}
           </td>
         )
       }
       {/** Epic - Date  */
-        !projectStatusNode.isTopLevelNode() && (
-          /** Date */
+        (
           <td>
             {rowData.targetDate && (<span>{formatDate(rowData.targetDate, 'LLL d yyyy')}</span>)}
           </td>
         )
       }
       {/** Epic - Description  */
-        !projectStatusNode.isTopLevelNode() && (
-          /** Date */
+        (
           <td>
             <Pill className="margin-top-4 activityTitle margin-bottom-4" excludeFocusZone={true} excludeTabStop={true}>
               Activity Area #{this.rowNumber++}: {rowData.title}
