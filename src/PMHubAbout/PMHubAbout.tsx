@@ -7,7 +7,6 @@ import { Header } from "azure-devops-ui/Header";
 import { Page } from "azure-devops-ui/Page";
 import { ZeroData } from "azure-devops-ui/ZeroData";
 
-
 class PMHubAbout extends React.Component<{}> {
   constructor(props: {}) {
     super(props);
@@ -20,9 +19,7 @@ class PMHubAbout extends React.Component<{}> {
   public render(): JSX.Element {
     return (
       <Page className="flex-grow">
-        <Header
-          title="About"
-        />
+        <Header title="About" />
         <ZeroData
           imagePath="../../img/logo.png"
           imageAltText="IT RP Logo"
