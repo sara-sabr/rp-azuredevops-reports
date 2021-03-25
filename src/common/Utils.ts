@@ -81,7 +81,7 @@ export class Utils {
    * @param name the query name found inside the configuration folder.
    * @param type the class definition of results expected
    */
-  static async executeTreeQuery<T extends WorkItemBase>(
+  static async executeQuery<T extends WorkItemBase>(
     name: string,
     type: { new (): T }
   ): Promise<SearchResultTreeNode<T, number>> {

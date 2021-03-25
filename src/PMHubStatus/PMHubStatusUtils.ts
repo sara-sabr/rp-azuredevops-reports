@@ -203,7 +203,7 @@ export class PMHubStatusUtils {
     const impedimentsResults: SearchResultTreeNode<
       Impediments,
       number
-    > = await Utils.executeTreeQuery(
+    > = await Utils.executeQuery(
       PMHubStatusConfiguration.getQueryImpediments(),
       Impediments
     );
@@ -244,7 +244,7 @@ export class PMHubStatusUtils {
     const projectStatus: SearchResultTreeNode<
       ProjectStatus,
       number
-    > = await Utils.executeTreeQuery(
+    > = await Utils.executeQuery(
       PMHubStatusConfiguration.getQueryForLatestStatus(),
       ProjectStatus
     );
