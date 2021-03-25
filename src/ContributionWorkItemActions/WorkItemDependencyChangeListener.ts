@@ -9,8 +9,9 @@ import {
 } from "azure-devops-extension-api/WorkItemTracking";
 
 import * as SDK from "azure-devops-extension-sdk";
-import { Utils } from "../common/Utils";
+import { SearchUtils } from "../common/SearchUtils";
 import { Constants } from "../common/Constants";
+import { ProjectUtils } from "../common/ProjectUtils";
 
 /**
  * Listener on change events while inside a work item form.
@@ -69,8 +70,8 @@ export class WorkItemDependencyChangeListener
     ]);
     const parent: number = witFields[Constants.WIT_FIELD_PARENT_ID] as number;
 
-    await Utils.validateAndUpdateParents(
-      Utils.WIT_API_CLIENT,
+    await ProjectUtils.validateAndUpdateParents(
+      ProjectUtils.WIT_API_CLIENT,
       parent,
       savedEventArgs.id,
       witChangedDate,

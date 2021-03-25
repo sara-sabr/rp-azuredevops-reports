@@ -1,5 +1,5 @@
 import { Constants } from "../common/Constants";
-import { Utils } from "../common/Utils";
+import { SearchUtils } from "../common/SearchUtils";
 
 /**
  * Looad the configurations required to display the status report page.
@@ -37,7 +37,7 @@ export class PMHubStatusConfiguration {
    * @returns the name of the query.
    */
   public static getQueryForLatestStatus(): string {
-    return Utils.buildQueryFQN(
+    return SearchUtils.buildQueryFQN(
       Constants.DEFAULT_QUERIES_SHARED_FOLDER,
       Constants.DEFAULT_QUERIES_EXTENSION_FOLDER,
       PMHubStatusConfiguration.STATUS_REPORT_FOLDER,
@@ -51,7 +51,7 @@ export class PMHubStatusConfiguration {
    * @returns the name of the query.
    */
   public static getQueryImpediments(): string {
-    return Utils.buildQueryFQN(
+    return SearchUtils.buildQueryFQN(
       Constants.DEFAULT_QUERIES_SHARED_FOLDER,
       Constants.DEFAULT_QUERIES_EXTENSION_FOLDER,
       PMHubStatusConfiguration.STATUS_REPORT_FOLDER,

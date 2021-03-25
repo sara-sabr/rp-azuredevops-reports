@@ -31,7 +31,7 @@ import { Constants } from "../common/Constants";
 import { PMHubStatusUtils } from "./PMHubStatusUtils";
 import { ZeroData } from "azure-devops-ui/ZeroData";
 import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
-import { Utils } from "../common/Utils";
+import { SearchUtils } from "../common/SearchUtils";
 
 /**
  * The status report page.
@@ -55,7 +55,9 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    */
   private async loadData(): Promise<void> {
     const latestProjectStatus = await PMHubStatusUtils.getLatestProjectStatuses();
-    const queryUrl = await Utils.getQueryURL(latestProjectStatus.sourceQuery);
+    const queryUrl = await SearchUtils.getQueryURL(
+      latestProjectStatus.sourceQuery
+    );
     const groupedData = PMHubStatusUtils.groupResultData(latestProjectStatus);
     this.rowNumber = 1;
     this.setState({

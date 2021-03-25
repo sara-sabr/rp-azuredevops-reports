@@ -1,5 +1,5 @@
 import { ProjectStatus } from "./ProjectStatus";
-import { Utils } from "../common/Utils";
+import { SearchUtils } from "../common/SearchUtils";
 import { PMHubStatusConfiguration } from "./Configuration";
 import { Impediments } from "./Impediments";
 import { Constants } from "../common/Constants";
@@ -203,7 +203,7 @@ export class PMHubStatusUtils {
     const impedimentsResults: SearchResultTreeNode<
       Impediments,
       number
-    > = await Utils.executeQuery(
+    > = await SearchUtils.executeQuery(
       PMHubStatusConfiguration.getQueryImpediments(),
       Impediments
     );
@@ -244,7 +244,7 @@ export class PMHubStatusUtils {
     const projectStatus: SearchResultTreeNode<
       ProjectStatus,
       number
-    > = await Utils.executeQuery(
+    > = await SearchUtils.executeQuery(
       PMHubStatusConfiguration.getQueryForLatestStatus(),
       ProjectStatus
     );
