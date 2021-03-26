@@ -93,7 +93,6 @@ export class SearchUtils {
     }
 
     if (nodeMap.size > 0) {
-
       // Get the fields names.
       const fieldNames: string[] = [];
       for (let idx = 0; idx < results.columns.length; idx++) {

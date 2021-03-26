@@ -30,15 +30,15 @@ export const commandBarItemsAdvanced: IHeaderCommandBarItem[] = [
   },
   {
     iconProps: {
-      iconName: "Add"
+      iconName: "Save"
     },
-    id: "itrp-pm-status-hub-header-add",
+    id: "itrp-pm-status-hub-header-save",
     important: true,
     isPrimary: true,
     onActivate: () => {
       alert("This would normally trigger a modal popup");
     },
-    text: "Add"
+    text: "Save"
   },
   {
     iconProps: {

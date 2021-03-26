@@ -32,6 +32,8 @@ import { PMHubStatusUtils } from "./PMHubStatusUtils";
 import { ZeroData } from "azure-devops-ui/ZeroData";
 import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
 import { SearchUtils } from "../common/SearchUtils";
+import { PMStatusDocument } from "./PMStatusRecord";
+import { IListBoxItem, ListBoxItemType } from "azure-devops-ui/ListBox";
 
 /**
  * The status report page.
@@ -39,10 +41,12 @@ import { SearchUtils } from "../common/SearchUtils";
 class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
   private statusReportSelection = new DropdownSelection();
   private rowNumber: number = 1;
+  private static LATEST_REPORT:string  = "Latest";
 
   constructor(props: {}) {
     super(props);
-    this.state = { currentStatus: undefined };
+    this.state = { statusReport: undefined,
+                   reportList: [] };
   }
 
   public componentDidMount() {
@@ -54,18 +58,29 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    * Wrap all asyc calls into this.
    */
   private async loadData(): Promise<void> {
-    const latestProjectStatus = await PMHubStatusUtils.getLatestProjectStatuses();
+
+    const savedReports = await PMHubStatusUtils.getListOfReports();
+
+    // Load the requested status report and if none selected, load the latest.
+    const projectStatusData = await PMHubStatusUtils.getLatestProjectStatuses();
     const queryUrl = await SearchUtils.getQueryURL(
-      latestProjectStatus.sourceQuery
+      projectStatusData.sourceQuery
     );
-    const groupedData = PMHubStatusUtils.groupResultData(latestProjectStatus);
-    this.rowNumber = 1;
+
+    const statusDocument:PMStatusDocument = new PMStatusDocument();
+    statusDocument.asOf = projectStatusData.asOf;
+    statusDocument.name = "Weekly Report of 2021-03-27";
+    const groupedData = PMHubStatusUtils.groupResultData(projectStatusData);
+
+    // Page data.
     this.setState({
-      currentStatus: groupedData,
+      statusReport: groupedData,
       queryUrl: queryUrl,
-      sourceQuery: latestProjectStatus.sourceQuery,
-      reportDate: latestProjectStatus.asOf
+      currentSourceQuery: projectStatusData.sourceQuery,
+      record: statusDocument,
+      reportList: savedReports
     });
+    this.rowNumber = 1;
   }
 
   /**
@@ -146,7 +161,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
         <tr className="status-report-grouped-header-row">
           <th colSpan={3}>{groupTitle}</th>
         </tr>
-        {this.state.currentStatus?.get(groupTitle)?.map((value, index) => {
+        {this.state.statusReport?.get(groupTitle)?.map((value, index) => {
           return this.writeStatusRow(value);
         })}
       </tbody>
@@ -188,6 +203,40 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
     );
   }
 
+  /**
+   * Produce the list of items
+   */
+  private statusReportList():IListBoxItem[] {
+    const itemList:IListBoxItem[] = [];
+
+    // Add the latest
+    itemList.push({
+      id: 'Latest',
+      text: 'Latest'
+    });
+    itemList.push({
+      id: "divider",
+      type: ListBoxItemType.Divider,
+    });
+
+    if (this.state.reportList && this.state.reportList.length > 0) {
+      itemList.push({
+        id: "Saved Reports",
+        type: ListBoxItemType.Header,
+        text: "Saved Reports"
+      });
+
+      for (const report of this.state.reportList) {
+        itemList.push({
+          id: report.id as string,
+          text: report.name
+        })
+      }
+    }
+
+    return itemList;
+  }
+
   public render(): JSX.Element {
     return (
       <Page className="flex-grow">
@@ -206,11 +255,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
                 ariaLabel="Report Date"
                 placeholder="Select a report"
                 showFilterBox={true}
-                items={[
-                  { id: "Latest", text: "Latest" },
-                  { id: "2020-03-18", text: "2020-03-18" },
-                  { id: "2020-03-11", text: "2020-03-11" }
-                ]}
+                items={this.statusReportList()}
                 selection={this.statusReportSelection}
               />
             </HeaderDescription>
@@ -229,7 +274,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
               </tr>
             </thead>
             {/** Print this on no data. */
-            this.state.currentStatus == undefined && (
+            this.state.statusReport == undefined && (
               <tbody>
                 <tr>
                   <td colSpan={3}>
@@ -241,8 +286,8 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
               </tbody>
             )}
             {/** Status report with no data found. */
-            this.state.currentStatus !== undefined &&
-              this.state.currentStatus.size === 0 && (
+            this.state.statusReport !== undefined &&
+              this.state.statusReport.size === 0 && (
                 <tbody>
                   <tr>
                     <td colSpan={3}>
@@ -254,7 +299,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
                             <p>
                               Please ensure the{" "}
                               <a href={this.state.queryUrl} target={"_top"}>
-                                {this.state.sourceQuery?.name}
+                                {this.state.currentSourceQuery?.name}
                               </a>{" "}
                               query actually produces a result.
                             </p>
@@ -269,9 +314,9 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
               )}
 
             {/** Status report with data populated. */
-            this.state.currentStatus !== undefined &&
-              this.state.currentStatus.size >= 0 &&
-              [...this.state.currentStatus].map(entry => {
+            this.state.statusReport !== undefined &&
+              this.state.statusReport.size >= 0 &&
+              [...this.state.statusReport].map(entry => {
                 return this.writeGroup(entry[0]);
               })}
           </table>

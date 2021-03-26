@@ -5,11 +5,54 @@ import { Impediments } from "./Impediments";
 import { Constants } from "../common/Constants";
 import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
 import { QueryType } from "azure-devops-extension-api/WorkItemTracking";
+import { ProjectUtils } from "../common/ProjectUtils";
+import { IPMHubStatusPage } from "./IPMHubStatusPage";
+import { PMStatusDocument } from "./PMStatusRecord";
 
 /**
  * Utility methods for project status page.
  */
 export class PMHubStatusUtils {
+
+  private static COLLECTION_ID = "status-report";
+
+  /**
+   * Get a list of reports.
+   *
+   * @returns a list of status reports.
+   */
+  public static async getListOfReports():Promise<PMStatusDocument[]> {
+    const dataService = await ProjectUtils.getDatastoreService();
+    const result = await dataService.getDocuments(this.COLLECTION_ID, {defaultValue: []}) as PMStatusDocument[];
+    return result;
+  }
+
+  /**
+   * Delete all reports.
+   */
+  public static async deleteAllReports():Promise<void> {
+    const records = await this.getListOfReports();
+    const dataService = await ProjectUtils.getDatastoreService();
+
+    for (let r of records) {
+      if (r.id) {
+        await dataService.deleteDocument(this.COLLECTION_ID, r.id);
+      }
+    }
+  }
+
+  /**
+   * Save the current data on the status page.
+   *
+   * @param record the current data of the page.
+   * @returns the updated record (Does not change the original)
+   */
+  public static async saveReport(record: PMStatusDocument):Promise<PMStatusDocument> {
+    const dataService = await ProjectUtils.getDatastoreService();
+    record = await dataService.setDocument(this.COLLECTION_ID, record);
+    return record;
+  }
+
   /**
    * Group the results by configuration first and if not configured, then use the search results as a grouping.
    *
@@ -30,15 +73,18 @@ export class PMHubStatusUtils {
         PMHubStatusConfiguration.STATUS_REPORT_GROUPING_PREFIX_BY_FIELD
       )
     ) {
+      // Configuration - Mode 1 (see function description)
       const fieldName = reportGrouping.substring(
         PMHubStatusConfiguration.STATUS_REPORT_GROUPING_PREFIX_BY_FIELD.length
       );
+
       if (currentStatus.sourceQuery?.queryType === QueryType.OneHop) {
         return this.groupResultDataByFieldWhenTree(currentStatus, fieldName);
       } else if (currentStatus.sourceQuery?.queryType === QueryType.Flat) {
         return this.groupResultDataByFieldWhenFlat(currentStatus, fieldName);
       }
     } else if (
+      // Configuration - Mode 2 (see function description)
       reportGrouping === PMHubStatusConfiguration.STATUS_REPORT_GROUPING_QUERY
     ) {
       if (currentStatus.sourceQuery?.queryType === QueryType.OneHop) {

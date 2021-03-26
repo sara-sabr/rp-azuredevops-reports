@@ -3,7 +3,9 @@ import {
   ILocationService,
   IProjectInfo,
   IProjectPageService,
-  getClient
+  getClient,
+  IExtensionDataService,
+  IExtensionDataManager
 } from "azure-devops-extension-api";
 import * as SDK from "azure-devops-extension-sdk";
 import { Constants } from "./Constants";
@@ -19,18 +21,78 @@ export class ProjectUtils {
   static readonly WIT_API_CLIENT = getClient(WorkItemTrackingRestClient);
 
   /**
+   * The singleton local service.
+   */
+  private static SERVICE_LOCATION:ILocationService;
+
+  /**
+   * The singleton and project service.
+   */
+  private static SERVICE_PROJECT:IProjectPageService;
+
+  /**
+   * The singleton for the data service.
+   */
+  private static SERVICE_DATA:IExtensionDataManager;
+
+  /**
    * The Base URL of this project.
    */
   static BASE_URL: string;
+
+  /**
+   * Get the data storage service.
+   *
+   * @returns the singleton of the storage service.
+   */
+  public static async getDatastoreService():Promise<IExtensionDataManager> {
+    if (this.SERVICE_DATA === undefined) {
+      const dataService =  await SDK.getService<IExtensionDataService>(
+        CommonServiceIds.ExtensionDataService
+      );
+      const token = await SDK.getAccessToken();
+      this.SERVICE_DATA = await dataService.getExtensionDataManager(SDK.getExtensionContext().id, token);
+    }
+
+    return this.SERVICE_DATA;
+  }
+
+  /**
+   * Get the project service.
+   *
+   * @returns the singleton of the project service.
+   */
+  public static async getProjectService():Promise<IProjectPageService> {
+    if (this.SERVICE_PROJECT === undefined) {
+      this.SERVICE_PROJECT = await SDK.getService<IProjectPageService>(
+        CommonServiceIds.ProjectPageService
+      );
+    }
+
+    return this.SERVICE_PROJECT;
+  }
+
+  /**
+   * Get the location service.
+   *
+   * @returns the singleton of the location service.
+   */
+  public static async getLocationService():Promise<ILocationService> {
+    if (this.SERVICE_LOCATION === undefined) {
+      this.SERVICE_LOCATION = await SDK.getService<ILocationService>(
+        CommonServiceIds.LocationService
+      );
+    }
+
+    return this.SERVICE_LOCATION;
+  }
 
   /**
    * Get the base url for this project
    */
   public static async getBaseUrl(): Promise<string> {
     if (this.BASE_URL === undefined) {
-      const locationService = await SDK.getService<ILocationService>(
-        CommonServiceIds.LocationService
-      );
+      const locationService = await this.getLocationService();
       const orgUrl = await locationService.getServiceLocation();
       const projectName = await this.getProjectName();
       this.BASE_URL = orgUrl + projectName;
@@ -59,9 +121,7 @@ export class ProjectUtils {
    * @returns the project or undefined if not found.
    */
   static async getProject(): Promise<IProjectInfo | undefined> {
-    const projectService = await SDK.getService<IProjectPageService>(
-      CommonServiceIds.ProjectPageService
-    );
+    const projectService = await this.getProjectService();
     return projectService.getProject();
   }
 
