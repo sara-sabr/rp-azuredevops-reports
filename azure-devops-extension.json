@@ -58,18 +58,6 @@
     {
       "path": "img",
       "addressable": true
-    },
-    {
-      "path": "i18n/language.json",
-      "packagePath": "i18n/en.json",
-      "addressable": true,
-      "lang": "en"
-    },
-    {
-      "path": "i18n/language.json",
-      "packagePath": "i18n/fr.json",
-      "addressable": true,
-      "lang": "fr"
     }
   ]
 }
