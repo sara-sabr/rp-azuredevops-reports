@@ -276,8 +276,11 @@ export class PMHubStatusUtils {
       relatedNode = nodeMap.get(relatedId);
 
       if (relatedNode && relatedNode.data) {
-        // We have an impediment mapped to a project.
-        relatedNode.data.addImpediment(node.data.title);
+        // Go down a level as impediment is there.
+        if (node.children[0].data) {
+          // We have an impediment mapped to a project.
+          relatedNode.data.addImpediment(node.children[0].data.title);
+        }
       }
     }
   }
