@@ -176,8 +176,8 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
     riskLevel: string | undefined,
     id: number
   ): JSX.Element {
-    let statusProp: IStatusProps = Statuses.Queued;
-    let statusText: string = "Pending";
+    let statusProp: IStatusProps;
+    let statusText: string;
 
     if (riskLevel === Constants.WIT_RISK_HIGH) {
       statusProp = Statuses.Failed;
@@ -185,7 +185,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
     } else if (riskLevel === Constants.WIT_RISK_MED) {
       statusProp = Statuses.Warning;
       statusText = "Medium";
-    } else if (riskLevel === Constants.WIT_RISK_LOW) {
+    } else {
       statusProp = Statuses.Success;
       statusText = "Low";
     }
