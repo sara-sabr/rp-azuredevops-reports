@@ -27,10 +27,10 @@ export interface IPMHubStatusPage {
   /**
    * List of reports.
    */
-  reportList:PMStatusDocument[];
+  reportList: PMStatusDocument[];
 
   /**
    * The record being displayed.
    */
-  record?:PMStatusDocument;
+  record?: PMStatusDocument;
 }

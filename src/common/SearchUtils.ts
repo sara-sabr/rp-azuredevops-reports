@@ -40,7 +40,11 @@ export class SearchUtils {
    */
   static async getQuery(name: string): Promise<QueryHierarchyItem> {
     const projectName = await ProjectUtils.getProjectName();
-    return ProjectUtils.WIT_API_CLIENT.getQuery(projectName, name, QueryExpand.Wiql);
+    return ProjectUtils.WIT_API_CLIENT.getQuery(
+      projectName,
+      name,
+      QueryExpand.Wiql
+    );
   }
 
   /**
@@ -74,11 +78,14 @@ export class SearchUtils {
     let wiql = query.wiql;
 
     if (asOf) {
-      wiql +=  " ASOF '" + asOf.toISOString() + "'";
+      wiql += " ASOF '" + asOf.toISOString() + "'";
     }
 
     // Get results.
-    const results = await ProjectUtils.WIT_API_CLIENT.queryByWiql({query: wiql}, projectName);
+    const results = await ProjectUtils.WIT_API_CLIENT.queryByWiql(
+      { query: wiql },
+      projectName
+    );
     rootNode.asOf = results.asOf;
 
     if (results.queryResultType === QueryResultType.WorkItem) {

@@ -41,12 +41,11 @@ import { IListBoxItem, ListBoxItemType } from "azure-devops-ui/ListBox";
 class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
   private statusReportSelection = new DropdownSelection();
   private rowNumber: number = 1;
-  private static LATEST_REPORT:string  = "Latest";
+  private static LATEST_REPORT: string = "Latest";
 
   constructor(props: {}) {
     super(props);
-    this.state = { statusReport: undefined,
-                   reportList: [] };
+    this.state = { statusReport: undefined, reportList: [] };
   }
 
   public componentDidMount() {
@@ -58,7 +57,6 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    * Wrap all asyc calls into this.
    */
   private async loadData(): Promise<void> {
-
     const savedReports = await PMHubStatusUtils.getListOfReports();
 
     // Load the requested status report and if none selected, load the latest.
@@ -67,7 +65,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
       projectStatusData.sourceQuery
     );
 
-    const statusDocument:PMStatusDocument = new PMStatusDocument();
+    const statusDocument: PMStatusDocument = new PMStatusDocument();
     statusDocument.asOf = projectStatusData.asOf;
     statusDocument.name = "Weekly Report of 2021-03-27";
     const groupedData = PMHubStatusUtils.groupResultData(projectStatusData);
@@ -206,17 +204,17 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
   /**
    * Produce the list of items
    */
-  private statusReportList():IListBoxItem[] {
-    const itemList:IListBoxItem[] = [];
+  private statusReportList(): IListBoxItem[] {
+    const itemList: IListBoxItem[] = [];
 
     // Add the latest
     itemList.push({
-      id: 'Latest',
-      text: 'Latest'
+      id: "Latest",
+      text: "Latest"
     });
     itemList.push({
       id: "divider",
-      type: ListBoxItemType.Divider,
+      type: ListBoxItemType.Divider
     });
 
     if (this.state.reportList && this.state.reportList.length > 0) {
@@ -230,7 +228,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
         itemList.push({
           id: report.id as string,
           text: report.name
-        })
+        });
       }
     }
 

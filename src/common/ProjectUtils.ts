@@ -23,17 +23,17 @@ export class ProjectUtils {
   /**
    * The singleton local service.
    */
-  private static SERVICE_LOCATION:ILocationService;
+  private static SERVICE_LOCATION: ILocationService;
 
   /**
    * The singleton and project service.
    */
-  private static SERVICE_PROJECT:IProjectPageService;
+  private static SERVICE_PROJECT: IProjectPageService;
 
   /**
    * The singleton for the data service.
    */
-  private static SERVICE_DATA:IExtensionDataManager;
+  private static SERVICE_DATA: IExtensionDataManager;
 
   /**
    * The Base URL of this project.
@@ -45,13 +45,16 @@ export class ProjectUtils {
    *
    * @returns the singleton of the storage service.
    */
-  public static async getDatastoreService():Promise<IExtensionDataManager> {
+  public static async getDatastoreService(): Promise<IExtensionDataManager> {
     if (this.SERVICE_DATA === undefined) {
-      const dataService =  await SDK.getService<IExtensionDataService>(
+      const dataService = await SDK.getService<IExtensionDataService>(
         CommonServiceIds.ExtensionDataService
       );
       const token = await SDK.getAccessToken();
-      this.SERVICE_DATA = await dataService.getExtensionDataManager(SDK.getExtensionContext().id, token);
+      this.SERVICE_DATA = await dataService.getExtensionDataManager(
+        SDK.getExtensionContext().id,
+        token
+      );
     }
 
     return this.SERVICE_DATA;
@@ -62,7 +65,7 @@ export class ProjectUtils {
    *
    * @returns the singleton of the project service.
    */
-  public static async getProjectService():Promise<IProjectPageService> {
+  public static async getProjectService(): Promise<IProjectPageService> {
     if (this.SERVICE_PROJECT === undefined) {
       this.SERVICE_PROJECT = await SDK.getService<IProjectPageService>(
         CommonServiceIds.ProjectPageService
@@ -77,7 +80,7 @@ export class ProjectUtils {
    *
    * @returns the singleton of the location service.
    */
-  public static async getLocationService():Promise<ILocationService> {
+  public static async getLocationService(): Promise<ILocationService> {
     if (this.SERVICE_LOCATION === undefined) {
       this.SERVICE_LOCATION = await SDK.getService<ILocationService>(
         CommonServiceIds.LocationService

@@ -2,23 +2,23 @@
  * The record being saved into Azure Boards.
  */
 export class PMStatusDocument {
-    /**
-     * The document ID.
-     */
-    id: string | undefined;
+  /**
+   * The document ID.
+   */
+  id: string | undefined;
 
-    /**
-     * The name of the status report.
-     */
-    name: string = "";
+  /**
+   * The name of the status report.
+   */
+  name: string = "";
 
-    /**
-     * Is the status report approved?
-     */
-    approved: boolean = true;
+  /**
+   * Is the status report approved?
+   */
+  approved: boolean = true;
 
-    /**
-     * Date of when the status report data was produced.
-     */
-    asOf: Date | undefined;
+  /**
+   * Date of when the status report data was produced.
+   */
+  asOf: Date | undefined;
 }
