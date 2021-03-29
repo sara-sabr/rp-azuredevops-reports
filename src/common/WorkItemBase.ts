@@ -1,7 +1,9 @@
+// Library Level
 import {
-  WorkItem,
-  QueryHierarchyItem
+  WorkItem
 } from "azure-devops-extension-api/WorkItemTracking";
+
+// Project Level
 import { Constants } from "./Constants";
 
 export abstract class WorkItemBase {

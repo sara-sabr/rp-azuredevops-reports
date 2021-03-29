@@ -1,38 +1,41 @@
-import { ProjectStatus } from "./ProjectStatus";
-import { SearchUtils } from "../common/SearchUtils";
-import { PMHubStatusConfiguration } from "./Configuration";
-import { Impediments } from "./Impediments";
-import { Constants } from "../common/Constants";
-import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
+// Library level
 import { QueryType } from "azure-devops-extension-api/WorkItemTracking";
-import { ProjectUtils } from "../common/ProjectUtils";
-import { IPMHubStatusPage } from "./IPMHubStatusPage";
+
+// Project level
+import { Constants } from "../common/Constants";
+import { Impediments } from "./Impediments";
+import { PMHubStatusConfiguration } from "./Configuration";
 import { PMStatusDocument } from "./PMStatusRecord";
+import { ProjectStatus } from "./ProjectStatus";
+import { ProjectUtils } from "../common/ProjectUtils";
+import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
+import { SearchUtils } from "../common/SearchUtils";
 
 /**
- * Utility methods for project status page.
+ * Project status service page.
  */
-export class PMHubStatusUtils {
+export class PMHubStatusService {
   private static COLLECTION_ID = "status-report";
 
   /**
-   * Get a list of reports.
+   * Get a list of records.
    *
-   * @returns a list of status reports.
+   * @returns a list of status records.
    */
-  public static async getListOfReports(): Promise<PMStatusDocument[]> {
+  public static async getListOfRecords(): Promise<PMStatusDocument[]> {
     const dataService = await ProjectUtils.getDatastoreService();
     const result = (await dataService.getDocuments(this.COLLECTION_ID, {
       defaultValue: []
     })) as PMStatusDocument[];
+
     return result;
   }
 
   /**
-   * Delete all reports.
+   * Delete all records.
    */
-  public static async deleteAllReports(): Promise<void> {
-    const records = await this.getListOfReports();
+  public static async deleteAllRecords(): Promise<void> {
+    const records = await this.getListOfRecords();
     const dataService = await ProjectUtils.getDatastoreService();
 
     for (let r of records) {
@@ -43,16 +46,42 @@ export class PMHubStatusUtils {
   }
 
   /**
+   * Delete a record.
+   *
+   * @param record the record to delete.
+   */
+  public static async deleteRecord(record: PMStatusDocument): Promise<void> {
+    const dataService = await ProjectUtils.getDatastoreService();
+    if (record && record.id) {
+      await dataService.deleteDocument(this.COLLECTION_ID, record.id);
+    }
+  }
+
+  /**
    * Save the current data on the status page.
    *
    * @param record the current data of the page.
    * @returns the updated record (Does not change the original)
    */
-  public static async saveReport(
+  public static async saveRecord(
     record: PMStatusDocument
   ): Promise<PMStatusDocument> {
     const dataService = await ProjectUtils.getDatastoreService();
-    record = await dataService.setDocument(this.COLLECTION_ID, record);
+
+    if (record.id) {
+      // Update.
+      record = await dataService.updateDocument(this.COLLECTION_ID, record);
+    } else {
+      // Create.
+      if (record.asOf) {
+        record.name = ProjectUtils.formatDate(record.asOf);
+        record.id = ProjectUtils.formatDate(record.asOf, false);
+        record.id = record.asOf.getTime().toString();
+      }
+
+      record = await dataService.createDocument(this.COLLECTION_ID, record);
+    }
+
     return record;
   }
 
@@ -293,16 +322,28 @@ export class PMHubStatusUtils {
   static async getLatestProjectStatuses(): Promise<
     SearchResultTreeNode<ProjectStatus, number>
   > {
+    return this.getProjectStatus();
+  }
+
+  /**
+   * Get the latest project status.
+   *
+   * @param asOf the date or undefined to get latest.
+   */
+  static async getProjectStatus(
+    asOf?: Date
+  ): Promise<SearchResultTreeNode<ProjectStatus, number>> {
     const projectStatus: SearchResultTreeNode<
       ProjectStatus,
       number
     > = await SearchUtils.executeQuery(
       PMHubStatusConfiguration.getQueryForLatestStatus(),
-      ProjectStatus
+      ProjectStatus,
+      asOf
     );
 
     if (!projectStatus.isEmpty()) {
-      await PMHubStatusUtils.populateImpediments(projectStatus);
+      await PMHubStatusService.populateImpediments(projectStatus);
     }
 
     return projectStatus;

@@ -1,15 +1,21 @@
+// Libraries
+import * as SDK from "azure-devops-extension-sdk";
 import {
   CommonServiceIds,
+  IExtensionDataManager,
+  IExtensionDataService,
   ILocationService,
   IProjectInfo,
   IProjectPageService,
-  getClient,
-  IExtensionDataService,
-  IExtensionDataManager
+  getClient
 } from "azure-devops-extension-api";
-import * as SDK from "azure-devops-extension-sdk";
-import { Constants } from "./Constants";
 import { WorkItemTrackingRestClient } from "azure-devops-extension-api/WorkItemTracking";
+
+// Function Import
+import { format as formatDate } from "date-fns";
+
+// Project Level
+import { Constants } from "./Constants";
 
 /**
  * Project utilities.
@@ -39,6 +45,46 @@ export class ProjectUtils {
    * The Base URL of this project.
    */
   static BASE_URL: string;
+
+  /**
+   * Display a date without time.
+   *
+   * @param date date
+   * @param separator true to include separator '-', otherwise none used.
+   *
+   * @returns a date in format YYYY-MM-DD or YYYYMMDD.
+   */
+  public static formatDateWithNoTime(date: Date, separator = true): string {
+    // The formats are using fn-date, so not matching comments, but
+    // as the comments pretty understandable, not going to change comment,
+    // What 'k' stands for and difference between Y and y is just going to
+    // confuse the caller.
+    if (separator) {
+      return formatDate(date, "yyyy-MM-dd");
+    } else {
+      return formatDate(date, "yyyyMMdd");
+    }
+  }
+
+  /**
+   * Display a date with time.
+   *
+   * @param date date
+   * @param separator true to include separator '-', otherwise none used.
+   *
+   * @returns a date in format YYYY-MM-DD HH:MM or YYYYMMDDHHMM.
+   */
+  public static formatDate(date: Date, separator = true): string {
+    // The formats are using fn-date, so not matching comments, but
+    // as the comments pretty understandable, not going to change comment,
+    // What 'k' stands for and difference between Y and y is just going to
+    // confuse the caller.
+    if (separator) {
+      return formatDate(date, "yyyy-MM-dd kk:mm");
+    } else {
+      return formatDate(date, "yyyyMMddkkmm");
+    }
+  }
 
   /**
    * Get the data storage service.

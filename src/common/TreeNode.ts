@@ -1,3 +1,9 @@
+/**
+ * Create a tree node to represent a parent with many children.
+ *
+ * T - The data being stored at that node
+ * Y - The key used to lookup a node by reference (must be unique for entire tree)
+ */
 export class TreeNode<T, Y> {
   /**
    * Data at this node.

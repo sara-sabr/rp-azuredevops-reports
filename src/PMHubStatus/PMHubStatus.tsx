@@ -1,11 +1,10 @@
 import "./PMHubStatus.scss";
 
+// Library Level
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as SDK from "azure-devops-extension-sdk";
-import { format as formatDate } from "date-fns";
-import { Page } from "azure-devops-ui/Page";
-import { Pill } from "azure-devops-ui/Pill";
+import { Dropdown } from "azure-devops-ui/Dropdown";
 import {
   CustomHeader,
   HeaderDescription,
@@ -14,26 +13,31 @@ import {
   HeaderTitleRow,
   TitleSize
 } from "azure-devops-ui/Header";
+import { HeaderCommandBar } from "azure-devops-ui/HeaderCommandBar";
+import { IListBoxItem, ListBoxItemType } from "azure-devops-ui/ListBox";
+import { Page } from "azure-devops-ui/Page";
+import { Pill } from "azure-devops-ui/Pill";
+import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import {
   IStatusProps,
-  Statuses,
   Status,
-  StatusSize
+  StatusSize,
+  Statuses
 } from "azure-devops-ui/Status";
-import { Dropdown } from "azure-devops-ui/Dropdown";
-import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
-import { HeaderCommandBar } from "azure-devops-ui/HeaderCommandBar";
-import { commandBarItemsAdvanced } from "./Header";
-import { ProjectStatus } from "./ProjectStatus";
-import { IPMHubStatusPage } from "./IPMHubStatusPage";
-import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
-import { Constants } from "../common/Constants";
-import { PMHubStatusUtils } from "./PMHubStatusUtils";
 import { ZeroData } from "azure-devops-ui/ZeroData";
-import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
-import { SearchUtils } from "../common/SearchUtils";
+import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
+import { GroupedItemProvider } from "azure-devops-ui/Utilities/GroupedItemProvider";
+
+// Project Level
+import { Constants } from "../common/Constants";
+import { IPMHubStatusPage } from "./IPMHubStatusPage";
+import { PMHubStatusService } from "./PMHubStatusService";
 import { PMStatusDocument } from "./PMStatusRecord";
-import { IListBoxItem, ListBoxItemType } from "azure-devops-ui/ListBox";
+import { PMStatusMenu } from "./PMStatusMenu";
+import { ProjectStatus } from "./ProjectStatus";
+import { ProjectUtils } from "../common/ProjectUtils";
+import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
+
 
 /**
  * The status report page.
@@ -41,44 +45,100 @@ import { IListBoxItem, ListBoxItemType } from "azure-devops-ui/ListBox";
 class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
   private statusReportSelection = new DropdownSelection();
   private rowNumber: number = 1;
+  private commandButtons: PMStatusMenu;
   private static LATEST_REPORT: string = "Latest";
+  private pmHubStatusPage: IPMHubStatusPage;
 
   constructor(props: {}) {
     super(props);
-    this.state = { statusReport: undefined, reportList: [] };
+    this.pmHubStatusPage = {
+      statusReport: undefined,
+      reportList: this.generateReportList()
+    };
+    this.commandButtons = new PMStatusMenu();
+    this.state = this.pmHubStatusPage;
+    this.initEvents();
+  }
+
+  /**
+   * Attach the events.
+   */
+  private initEvents(): void {
+    let that = this;
+    this.commandButtons.attachOnSaveActivate(() => {
+      if (that.state.record) {
+        PMHubStatusService.saveRecord(that.state.record);
+        that.refreshSavedReports();
+      }
+    });
+    this.commandButtons.attachOnDeleteActivate(() => {
+      if (that.state.record) {
+        PMHubStatusService.deleteRecord(that.state.record);
+        that.refreshSavedReports();
+      }
+    });
   }
 
   public componentDidMount() {
     SDK.init();
     this.loadData();
+    this.refreshSavedReports();
+  }
+
+  /**
+   * Refresh the saved report this.
+   */
+  private async refreshSavedReports(): Promise<void> {
+    const savedReports = await PMHubStatusService.getListOfRecords();
+    this.pmHubStatusPage.reportList = this.generateReportList(savedReports);
+    this.setState(this.pmHubStatusPage);
+  }
+
+  /**
+   * Load the latest record into the page.
+   */
+  private async loadLatestRecord(): Promise<void> {
+    const projectStatusData = await PMHubStatusService.getLatestProjectStatuses();
+    const statusDocument: PMStatusDocument = new PMStatusDocument();
+    statusDocument.asOf = projectStatusData.asOf;
+    this.populateRecordInfo(projectStatusData, statusDocument);
+    this.statusReportSelection.select(0);
+  }
+
+  /**
+   * Populate the page based on record loaded.
+   *
+   * @param statusData the status date
+   * @param statusDocument the status document.
+   */
+  private populateRecordInfo(
+    statusData: SearchResultTreeNode<ProjectStatus, number>,
+    statusDocument: PMStatusDocument
+  ): void {
+    this.pmHubStatusPage.currentSourceQuery = statusData.sourceQuery;
+    this.pmHubStatusPage.statusReport = PMHubStatusService.groupResultData(
+      statusData
+    );
+    this.pmHubStatusPage.currentSourceQuery = statusData.sourceQuery;
+    this.pmHubStatusPage.record = statusDocument;
+    this.refreshState();
+
+    this.commandButtons.updateButtonStatuses(this.state);
+    this.rowNumber = 1;
+  }
+
+  /**
+   * Refresh the data with the backing object.
+   */
+  private refreshState(): void {
+    this.setState(this.pmHubStatusPage);
   }
 
   /**
    * Wrap all asyc calls into this.
    */
   private async loadData(): Promise<void> {
-    const savedReports = await PMHubStatusUtils.getListOfReports();
-
-    // Load the requested status report and if none selected, load the latest.
-    const projectStatusData = await PMHubStatusUtils.getLatestProjectStatuses();
-    const queryUrl = await SearchUtils.getQueryURL(
-      projectStatusData.sourceQuery
-    );
-
-    const statusDocument: PMStatusDocument = new PMStatusDocument();
-    statusDocument.asOf = projectStatusData.asOf;
-    statusDocument.name = "Weekly Report of 2021-03-27";
-    const groupedData = PMHubStatusUtils.groupResultData(projectStatusData);
-
-    // Page data.
-    this.setState({
-      statusReport: groupedData,
-      queryUrl: queryUrl,
-      currentSourceQuery: projectStatusData.sourceQuery,
-      record: statusDocument,
-      reportList: savedReports
-    });
-    this.rowNumber = 1;
+    await this.loadLatestRecord();
   }
 
   /**
@@ -110,7 +170,9 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
           /** Epic - Date  */
           <td>
             {rowData.targetDate && (
-              <span>{formatDate(rowData.targetDate, "LLL d yyyy")}</span>
+              <span>
+                {ProjectUtils.formatDateWithNoTime(rowData.targetDate)}
+              </span>
             )}
           </td>
         }
@@ -203,13 +265,18 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
 
   /**
    * Produce the list of items
+   *
+   * @parms savedDocuments an array of saved documents.
+   * @returns a list based off saved documents and pre-appended latest.
    */
-  private statusReportList(): IListBoxItem[] {
+  private generateReportList(
+    savedDocuments?: PMStatusDocument[]
+  ): IListBoxItem[] {
     const itemList: IListBoxItem[] = [];
 
     // Add the latest
     itemList.push({
-      id: "Latest",
+      id: PMHubStatus.LATEST_REPORT,
       text: "Latest"
     });
     itemList.push({
@@ -217,14 +284,14 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
       type: ListBoxItemType.Divider
     });
 
-    if (this.state.reportList && this.state.reportList.length > 0) {
+    if (savedDocuments && savedDocuments.length > 0) {
       itemList.push({
         id: "Saved Reports",
         type: ListBoxItemType.Header,
         text: "Saved Reports"
       });
 
-      for (const report of this.state.reportList) {
+      for (const report of savedDocuments) {
         itemList.push({
           id: report.id as string,
           text: report.name
@@ -253,12 +320,12 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
                 ariaLabel="Report Date"
                 placeholder="Select a report"
                 showFilterBox={true}
-                items={this.statusReportList()}
+                items={this.state.reportList}
                 selection={this.statusReportSelection}
               />
             </HeaderDescription>
           </HeaderTitleArea>
-          <HeaderCommandBar items={commandBarItemsAdvanced} />
+          <HeaderCommandBar items={this.commandButtons.getButtons()} />
         </CustomHeader>
         <div className="page-content-left page-content-right page-content-top">
           <table className="status-report-tables">

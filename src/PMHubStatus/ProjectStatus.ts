@@ -1,5 +1,7 @@
+// Library Level
 import { WorkItem } from "azure-devops-extension-api/WorkItemTracking";
-import { Constants } from "../common/Constants";
+
+// Project Level
 import { PMHubStatusConfiguration } from "./Configuration";
 import { WorkItemBase } from "../common/WorkItemBase";
 

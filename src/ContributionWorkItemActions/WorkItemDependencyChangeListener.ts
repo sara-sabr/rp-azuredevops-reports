@@ -1,15 +1,15 @@
+// Library Level
+import * as SDK from "azure-devops-extension-sdk";
 import {
-  IWorkItemNotificationListener,
   IWorkItemChangedArgs,
-  IWorkItemLoadedArgs,
   IWorkItemFieldChangedArgs,
-  WorkItemTrackingServiceIds,
   IWorkItemFormService,
-  WorkItemExpand
+  IWorkItemLoadedArgs,
+  IWorkItemNotificationListener,
+  WorkItemTrackingServiceIds
 } from "azure-devops-extension-api/WorkItemTracking";
 
-import * as SDK from "azure-devops-extension-sdk";
-import { SearchUtils } from "../common/SearchUtils";
+// Project Level
 import { Constants } from "../common/Constants";
 import { ProjectUtils } from "../common/ProjectUtils";
 

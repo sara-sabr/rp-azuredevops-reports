@@ -1,5 +1,8 @@
-import { TreeNode } from "./TreeNode";
+// Library Level
 import { QueryHierarchyItem } from "azure-devops-extension-api/WorkItemTracking";
+
+// Project Level
+import { TreeNode } from "./TreeNode";
 
 /**
  * Used to represent a search result.

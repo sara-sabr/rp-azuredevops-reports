@@ -1,7 +1,11 @@
+// Library level
+import { IListBoxItem } from "azure-devops-ui/ListBox";
+import { QueryHierarchyItem } from "azure-devops-extension-api/WorkItemTracking";
+
+// Project Level
+import { PMStatusDocument } from "./PMStatusRecord";
 import { ProjectStatus } from "./ProjectStatus";
 import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
-import { QueryHierarchyItem } from "azure-devops-extension-api/WorkItemTracking";
-import { PMStatusDocument } from "./PMStatusRecord";
 
 /**
  * Used by the status page to display current status and possible other statuses.
@@ -27,7 +31,7 @@ export interface IPMHubStatusPage {
   /**
    * List of reports.
    */
-  reportList: PMStatusDocument[];
+  reportList: IListBoxItem[];
 
   /**
    * The record being displayed.

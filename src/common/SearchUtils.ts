@@ -1,17 +1,20 @@
+// Library Level
 import {
+  QueryExpand,
   QueryHierarchyItem,
-  WorkItemLink,
-  WorkItemExpand,
-  WorkItemErrorPolicy,
-  WorkItem,
-  WorkItemReference,
   QueryResultType,
-  QueryExpand
+  WorkItem,
+  WorkItemErrorPolicy,
+  WorkItemExpand,
+  WorkItemLink,
+  WorkItemReference
 } from "azure-devops-extension-api/WorkItemTracking";
+
+// Project Level
 import { Constants } from "./Constants";
-import { WorkItemBase } from "./WorkItemBase";
-import { SearchResultTreeNode } from "./SearchResultTreeNode";
 import { ProjectUtils } from "./ProjectUtils";
+import { SearchResultTreeNode } from "./SearchResultTreeNode";
+import { WorkItemBase } from "./WorkItemBase";
 
 /**
  * Search utilities.
