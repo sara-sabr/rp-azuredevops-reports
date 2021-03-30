@@ -65,25 +65,50 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    * Attach the events.
    */
   private initEvents(): void {
-    let that = this;
+    const self = this;
+
+    // Save Event
     this.commandButtons.attachOnSaveActivate(() => {
-      if (that.state.record) {
-        PMHubStatusService.saveRecord(that.state.record);
-        that.refreshSavedReports();
-      }
+      self.saveEvent();
     });
+
+    // Delete event
     this.commandButtons.attachOnDeleteActivate(() => {
-      if (that.state.record) {
-        PMHubStatusService.deleteRecord(that.state.record);
-        that.refreshSavedReports();
-      }
+      self.deleteEvent();
     });
   }
 
+  /**
+   * Save button pressed, so save the record.
+   */
+  public async saveEvent():Promise<void> {
+    if (this.state.record) {
+      const record = await PMHubStatusService.saveRecord(this.state.record);
+      await this.refreshSavedReports();
+      this.pmHubStatusPage.record = record;
+      this.refreshState();
+      this.selectReport(record.id);
+    }
+
+    await this.commandButtons.updateButtonStatuses(this.state);
+  }
+
+  /**
+   * Delete button pressed, so delete the record and refresh with latest.
+   */
+  public async deleteEvent():Promise<void> {
+    if (this.state.record) {
+      await PMHubStatusService.deleteRecord(this.state.record);
+      await this.refreshSavedReports();
+      this.loadLatestRecord();
+    }
+  }
+
+
   public componentDidMount() {
     SDK.init();
-    this.loadData();
     this.refreshSavedReports();
+    this.loadData();
   }
 
   /**
@@ -102,7 +127,29 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
     const statusDocument: PMStatusDocument = new PMStatusDocument();
     statusDocument.asOf = projectStatusData.asOf;
     this.populateRecordInfo(projectStatusData, statusDocument);
-    this.statusReportSelection.select(0);
+    this.selectReport(PMHubStatus.LATEST_REPORT);
+    await this.commandButtons.updateButtonStatuses(this.state);
+
+  }
+
+  /**
+   * Select the current report represented on this page.
+   *
+   * @param id the id to select
+   */
+  private selectReport(id: string | undefined):void {
+    if (id === undefined) {
+      return;
+    }
+
+    const currentValues = this.savedReportArray.value;
+
+    for (let idx = 0; idx < currentValues.length; idx++) {
+      if (currentValues[idx].id === id) {
+        this.statusReportSelection.select(idx);
+        break;
+      }
+    }
   }
 
   /**
@@ -325,7 +372,9 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
               </Observer>
             </HeaderDescription>
           </HeaderTitleArea>
-          <HeaderCommandBar items={this.commandButtons.getButtons()} />
+          <Observer items={this.commandButtons.buttons}>
+            <HeaderCommandBar items={this.commandButtons.buttons.value} />
+          </Observer>
         </CustomHeader>
         <div className="page-content-left page-content-right page-content-top">
           <table className="status-report-tables">

@@ -4,11 +4,13 @@ import { IMenuItem, MenuItemType } from "azure-devops-ui/Menu";
 
 // Project Level
 import { IPMHubStatusPage } from "./IPMHubStatusPage";
+import { ObservableValue } from "azure-devops-ui/Core/Observable";
 
 /**
  * The menu bar for project status page.
  */
 export class PMStatusMenu {
+
   /**
    * The download button
    */
@@ -72,21 +74,13 @@ export class PMStatusMenu {
     disabled: true
   };
 
-  /**
-   * Get the buttons for this menu.
-   *
-   * @returns an array of buttons
-   */
-  public getButtons(): IHeaderCommandBarItem[] {
-    return [
-      this.downloadButton,
-      this.shareButton,
-      this.saveButton,
-      this.approveButton,
-      { id: "separator", itemType: MenuItemType.Divider },
-      this.deleteButton
-    ];
-  }
+  /** Used to trigger update. */
+  buttons: ObservableValue<IHeaderCommandBarItem[]> = new ObservableValue([this.downloadButton,
+    this.shareButton,
+    this.saveButton,
+    this.approveButton,
+    { id: "separator", itemType: MenuItemType.Divider },
+    this.deleteButton]);
 
   /**
    * Update the button states.
@@ -103,6 +97,7 @@ export class PMStatusMenu {
     this.deleteButton.disabled = !storedRecord;
     this.shareButton.disabled = !storedRecord;
     this.downloadButton.disabled = !storedRecord;
+    this.buttons.notify(this.buttons.value, "updateButtonStatus");
   }
 
   /**
