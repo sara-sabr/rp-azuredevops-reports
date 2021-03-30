@@ -9,13 +9,12 @@ module.exports = {
       "javascriptreact",
       "typescript",
       "typescriptreact"
-    ]
-  },
+    ]  },
   parserOptions: {
     ecmaVersion: 6,
     sourceType: "module",
     ecmaFeatures: {
         jsx: true
     }
-  }
+  },
 };

@@ -1,5 +1,4 @@
 // Library level
-import { IListBoxItem } from "azure-devops-ui/ListBox";
 import { QueryHierarchyItem } from "azure-devops-extension-api/WorkItemTracking";
 
 // Project Level
@@ -27,11 +26,6 @@ export interface IPMHubStatusPage {
    * The query
    */
   queryUrl?: string;
-
-  /**
-   * List of reports.
-   */
-  reportList: IListBoxItem[];
 
   /**
    * The record being displayed.

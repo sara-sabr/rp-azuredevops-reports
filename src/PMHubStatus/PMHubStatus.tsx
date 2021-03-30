@@ -15,6 +15,7 @@ import {
 } from "azure-devops-ui/Header";
 import { HeaderCommandBar } from "azure-devops-ui/HeaderCommandBar";
 import { IListBoxItem, ListBoxItemType } from "azure-devops-ui/ListBox";
+import { Observer } from "azure-devops-ui/Observer";
 import { Page } from "azure-devops-ui/Page";
 import { Pill } from "azure-devops-ui/Pill";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
@@ -37,7 +38,7 @@ import { PMStatusMenu } from "./PMStatusMenu";
 import { ProjectStatus } from "./ProjectStatus";
 import { ProjectUtils } from "../common/ProjectUtils";
 import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
-
+import { ObservableValue, ObservableArray } from "azure-devops-ui/Core/Observable";
 
 /**
  * The status report page.
@@ -48,12 +49,12 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
   private commandButtons: PMStatusMenu;
   private static LATEST_REPORT: string = "Latest";
   private pmHubStatusPage: IPMHubStatusPage;
+  private savedReportArray = new ObservableValue<IListBoxItem[]>([]);
 
   constructor(props: {}) {
     super(props);
     this.pmHubStatusPage = {
       statusReport: undefined,
-      reportList: this.generateReportList()
     };
     this.commandButtons = new PMStatusMenu();
     this.state = this.pmHubStatusPage;
@@ -90,8 +91,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    */
   private async refreshSavedReports(): Promise<void> {
     const savedReports = await PMHubStatusService.getListOfRecords();
-    this.pmHubStatusPage.reportList = this.generateReportList(savedReports);
-    this.setState(this.pmHubStatusPage);
+    this.savedReportArray.value = this.generateReportList(savedReports);
   }
 
   /**
@@ -272,17 +272,15 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
   private generateReportList(
     savedDocuments?: PMStatusDocument[]
   ): IListBoxItem[] {
-    const itemList: IListBoxItem[] = [];
-
-    // Add the latest
-    itemList.push({
+    const itemList: IListBoxItem[] = [{
+      // Add the latest
       id: PMHubStatus.LATEST_REPORT,
       text: "Latest"
-    });
-    itemList.push({
+    },{
+      // Divider
       id: "divider",
       type: ListBoxItemType.Divider
-    });
+    }];
 
     if (savedDocuments && savedDocuments.length > 0) {
       itemList.push({
@@ -316,13 +314,15 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
               </HeaderTitle>
             </HeaderTitleRow>
             <HeaderDescription>
-              <Dropdown
-                ariaLabel="Report Date"
-                placeholder="Select a report"
-                showFilterBox={true}
-                items={this.state.reportList}
-                selection={this.statusReportSelection}
-              />
+              <Observer items={this.savedReportArray}>
+                <Dropdown
+                  ariaLabel="Report Date"
+                  placeholder="Select a report"
+                  showFilterBox={true}
+                  items={[]}
+                  selection={this.statusReportSelection}
+                />
+              </Observer>
             </HeaderDescription>
           </HeaderTitleArea>
           <HeaderCommandBar items={this.commandButtons.getButtons()} />

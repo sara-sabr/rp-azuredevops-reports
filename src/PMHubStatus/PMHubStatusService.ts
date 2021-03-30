@@ -20,13 +20,26 @@ export class PMHubStatusService {
   /**
    * Get a list of records.
    *
+   * @param sortDesc returns results in descendig order, otherwise ascending.
    * @returns a list of status records.
    */
-  public static async getListOfRecords(): Promise<PMStatusDocument[]> {
+  public static async getListOfRecords(sortDesc = true): Promise<PMStatusDocument[]> {
     const dataService = await ProjectUtils.getDatastoreService();
     const result = (await dataService.getDocuments(this.COLLECTION_ID, {
       defaultValue: []
     })) as PMStatusDocument[];
+
+    const compareValue = sortDesc ? 1 : -1;
+
+    // In place sort.
+    result.sort((a,b):number => {
+      if (a.name < b.name) {
+        return compareValue;
+      } else if (a.name > b.name) {
+        return compareValue * -1;
+      }
+      return 0;
+    })
 
     return result;
   }
