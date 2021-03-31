@@ -100,10 +100,9 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
     if (this.state.record) {
       await PMHubStatusService.deleteRecord(this.state.record);
       await this.refreshSavedReports();
-      this.loadLatestRecord();
+      await this.loadLatestRecord();
     }
   }
-
 
   public componentDidMount() {
     SDK.init();
@@ -129,7 +128,6 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
     this.populateRecordInfo(projectStatusData, statusDocument);
     this.selectReport(PMHubStatus.LATEST_REPORT);
     await this.commandButtons.updateButtonStatuses(this.state);
-
   }
 
   /**
