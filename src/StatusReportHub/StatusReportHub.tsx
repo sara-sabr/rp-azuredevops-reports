@@ -16,10 +16,11 @@ import {
 } from "azure-devops-ui/Header";
 import { HeaderCommandBar } from "azure-devops-ui/HeaderCommandBar";
 import { IListBoxItem, ListBoxItemType } from "azure-devops-ui/ListBox";
+import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
 import { Observer } from "azure-devops-ui/Observer";
 import { Page } from "azure-devops-ui/Page";
 import { Pill } from "azure-devops-ui/Pill";
-import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
+import { Spinner, SpinnerSize, SpinnerOrientation } from "azure-devops-ui/Spinner";
 import {
   IStatusProps,
   Status,
@@ -43,20 +44,48 @@ import { StatusReportCommandMenu } from "./StatusReportCommandMenu.ui";
  * The status report page.
  */
 class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
+  /**
+   * The latest report record.
+   */
+  private static readonly LATEST_RECORD: StatusReportEntity = StatusReportService.LATEST_RECORD;
+
+  /**
+   * The status report dropdown selected
+   */
   private statusReportSelection = new DropdownSelection();
+
+  /**
+   * Row Number of entries
+   */
   private rowNumber: number = 1;
+
+  /**
+   * Menu Buttons
+   */
   private commandButtons: StatusReportCommandMenu;
-  private static LATEST_REPORT: string = "Latest";
-  private pmHubStatusPage: IStatusReportHubState;
+
+  /**
+   * State object being referenced.
+   *
+   * Note: You will need to call refreshState() in order for it to
+   * reflect in react though as we want to control when the state changes
+   * are fired.
+   */
+  private statusPageHub: IStatusReportHubState;
+
+  /**
+   * The list of reports saved. (This is using observer pattern)
+   */
   private savedReportArray = new ObservableValue<IListBoxItem[]>([]);
 
   constructor(props: {}) {
     super(props);
-    this.pmHubStatusPage = {
+    this.statusPageHub = {
+      record: StatusReportService.getLatestStatusReport(),
       statusReport: undefined,
     };
     this.commandButtons = new StatusReportCommandMenu();
-    this.state = this.pmHubStatusPage;
+    this.state = this.statusPageHub;
     this.initEvents();
   }
 
@@ -64,29 +93,48 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
    * Attach the events.
    */
   private initEvents(): void {
+    // This is required due to JS closures.
     const self = this;
 
     // Save Event
     this.commandButtons.attachOnSaveActivate(() => {
-      self.saveEvent();
+      self.eventHanlderSaveButton();
     });
 
     // Delete event
     this.commandButtons.attachOnDeleteActivate(() => {
-      self.deleteEvent();
+      self.eventHandlerDeleteButton();
     });
+  }
+
+  /**
+   * @inheritdoc
+   *
+   * Note: This is essentially called as part of react lifecycle.
+   * https://reactjs.org/docs/state-and-lifecycle.html
+   */
+  public componentDidMount() {
+    SDK.init();
+    this.refreshSavedReports();
+    this.loadLatestRecord();
   }
 
   /**
    * Save button pressed, so save the record.
    */
-  public async saveEvent():Promise<void> {
+  public async eventHanlderSaveButton():Promise<void> {
     if (this.state.record) {
+      this.showInProgress();
+
+      // Start the saving.
       const record = await StatusReportService.saveRecord(this.state.record);
       await this.refreshSavedReports();
-      this.pmHubStatusPage.record = record;
+      this.statusPageHub.record = record;
       this.refreshState();
+
+      // Always reload what we have after every save.
       this.selectReport(record.id);
+      await this.loadRecord();
     }
 
     await this.commandButtons.updateButtonStatuses(this.state);
@@ -95,19 +143,38 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   /**
    * Delete button pressed, so delete the record and refresh with latest.
    */
-  public async deleteEvent():Promise<void> {
+  public async eventHandlerDeleteButton():Promise<void> {
     if (this.state.record) {
+      this.showInProgress();
+
       await StatusReportService.deleteRecord(this.state.record);
       await this.refreshSavedReports();
+
       await this.loadLatestRecord();
     }
   }
 
-  public componentDidMount() {
-    SDK.init();
-    this.refreshSavedReports();
-    this.loadData();
+  /**
+   * Handle the selection event when a status report is chosen.
+   *
+   * @param event the event that happened
+   * @param item the item selected
+   */
+  public eventHandlerStatusReportSelection(event: React.SyntheticEvent<HTMLElement>, item: IListBoxItem):void {
+    if (item.data) {
+      this.showInProgress();
+      this.statusPageHub.record = item.data as StatusReportEntity;
+      this.loadRecord();
+    }
   }
+
+  /**
+   * Bring up the inprogress.
+   */
+  private showInProgress():void {
+    this.statusPageHub.statusReport = undefined;
+    this.refreshState();
+}
 
   /**
    * Refresh the saved report this.
@@ -118,15 +185,27 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   }
 
   /**
+   * Loads a record based upon the current record in the state.
+   */
+  private async loadRecord(): Promise<void> {
+    if (this.statusPageHub.record === undefined) {
+      return;
+    }
+
+    const asOf = this.statusPageHub.record.asOf;
+    const projectStatusData = await StatusReportService.getProjectStatus(asOf);
+    this.statusPageHub.record.asOf = projectStatusData.asOf;
+    this.populateRecordInfo(projectStatusData, this.statusPageHub.record);
+    this.selectReport(this.statusPageHub.record.id);
+    await this.commandButtons.updateButtonStatuses(this.state);
+  }
+
+  /**
    * Load the latest record into the page.
    */
   private async loadLatestRecord(): Promise<void> {
-    const projectStatusData = await StatusReportService.getLatestProjectStatuses();
-    const statusDocument: StatusReportEntity = new StatusReportEntity();
-    statusDocument.asOf = projectStatusData.asOf;
-    this.populateRecordInfo(projectStatusData, statusDocument);
-    this.selectReport(StatusReportHub.LATEST_REPORT);
-    await this.commandButtons.updateButtonStatuses(this.state);
+    this.statusPageHub.record = StatusReportHub.LATEST_RECORD;
+    await this.loadRecord();
   }
 
   /**
@@ -159,12 +238,12 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
     statusData: SearchResultEntity<StatusEntryEntity, number>,
     statusDocument: StatusReportEntity
   ): void {
-    this.pmHubStatusPage.currentSourceQuery = statusData.sourceQuery;
-    this.pmHubStatusPage.statusReport = StatusReportService.groupResultData(
+    this.statusPageHub.currentSourceQuery = statusData.sourceQuery;
+    this.statusPageHub.statusReport = StatusReportService.groupResultData(
       statusData
     );
-    this.pmHubStatusPage.currentSourceQuery = statusData.sourceQuery;
-    this.pmHubStatusPage.record = statusDocument;
+    this.statusPageHub.currentSourceQuery = statusData.sourceQuery;
+    this.statusPageHub.record = statusDocument;
     this.refreshState();
 
     this.commandButtons.updateButtonStatuses(this.state);
@@ -175,14 +254,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
    * Refresh the data with the backing object.
    */
   private refreshState(): void {
-    this.setState(this.pmHubStatusPage);
-  }
-
-  /**
-   * Wrap all asyc calls into this.
-   */
-  private async loadData(): Promise<void> {
-    await this.loadLatestRecord();
+    this.setState(this.statusPageHub);
   }
 
   /**
@@ -316,27 +388,30 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   private generateReportList(
     savedDocuments?: StatusReportEntity[]
   ): IListBoxItem[] {
-    const itemList: IListBoxItem[] = [{
+    const itemList: IListBoxItem[] = [
+      {
       // Add the latest
-      id: StatusReportHub.LATEST_REPORT,
-      text: "Latest"
+      id: StatusReportHub.LATEST_RECORD.id as string,
+      text: StatusReportHub.LATEST_RECORD.name,
+      data: StatusReportHub.LATEST_RECORD
     },{
       // Divider
       id: "divider",
-      type: ListBoxItemType.Divider
+      type: ListBoxItemType.Divider,
     }];
 
     if (savedDocuments && savedDocuments.length > 0) {
       itemList.push({
         id: "Saved Reports",
         type: ListBoxItemType.Header,
-        text: "Saved Reports"
+        text: "Saved Reports",
       });
 
       for (const report of savedDocuments) {
         itemList.push({
           id: report.id as string,
-          text: report.name
+          text: report.name,
+          data: report
         });
       }
     }
@@ -365,6 +440,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
                   showFilterBox={true}
                   items={[]}
                   selection={this.statusReportSelection}
+                  onSelect={this.eventHandlerStatusReportSelection.bind(this)}
                 />
               </Observer>
             </HeaderDescription>
@@ -390,7 +466,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
                 <tr>
                   <td colSpan={3}>
                     <div className="flex-row v-align-middle justify-center full-size">
-                      <Spinner size={SpinnerSize.large} label="Loading ..." />
+                      <Spinner size={SpinnerSize.large} label="Please wait ..." />
                     </div>
                   </td>
                 </tr>

@@ -15,7 +15,7 @@ export class StatusReportEntity {
   /**
    * Is the status report approved?
    */
-  approved: boolean = true;
+  approved?: boolean = true;
 
   /**
    * Date of when the status report data was produced.
