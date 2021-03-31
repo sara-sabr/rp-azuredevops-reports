@@ -1,13 +1,13 @@
 // Project Level
-import { Constants } from "../common/Constants";
-import { SearchUtils } from "../common/SearchUtils";
+import { Constants } from "../Common/Constants";
+import { SearchService } from "../Search/Search.service";
 
 /**
  * Looad the configurations required to display the status report page.
  *
  * Note: For now it is all fixed strings, however later this should be loaded
  */
-export class PMHubStatusConfiguration {
+export class StatusReportConfig {
   private static readonly STATUS_REPORT_FOLDER = "Status Report";
 
   /**
@@ -38,10 +38,10 @@ export class PMHubStatusConfiguration {
    * @returns the name of the query.
    */
   public static getQueryForLatestStatus(): string {
-    return SearchUtils.buildQueryFQN(
+    return SearchService.buildQueryFQN(
       Constants.DEFAULT_QUERIES_SHARED_FOLDER,
       Constants.DEFAULT_QUERIES_EXTENSION_FOLDER,
-      PMHubStatusConfiguration.STATUS_REPORT_FOLDER,
+      StatusReportConfig.STATUS_REPORT_FOLDER,
       "Latest Status Report"
     );
   }
@@ -52,10 +52,10 @@ export class PMHubStatusConfiguration {
    * @returns the name of the query.
    */
   public static getQueryImpediments(): string {
-    return SearchUtils.buildQueryFQN(
+    return SearchService.buildQueryFQN(
       Constants.DEFAULT_QUERIES_SHARED_FOLDER,
       Constants.DEFAULT_QUERIES_EXTENSION_FOLDER,
-      PMHubStatusConfiguration.STATUS_REPORT_FOLDER,
+      StatusReportConfig.STATUS_REPORT_FOLDER,
       "Impediments"
     );
   }

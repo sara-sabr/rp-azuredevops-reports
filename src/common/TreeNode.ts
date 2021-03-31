@@ -3,6 +3,8 @@
  *
  * T - The data being stored at that node
  * Y - The key used to lookup a node by reference (must be unique for entire tree)
+ *
+ * Note: See https://en.wikipedia.org/wiki/Tree_(data_structure)
  */
 export class TreeNode<T, Y> {
   /**

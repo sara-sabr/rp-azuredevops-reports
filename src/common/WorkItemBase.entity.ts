@@ -4,7 +4,7 @@ import { WorkItem } from "azure-devops-extension-api/WorkItemTracking";
 // Project Level
 import { Constants } from "./Constants";
 
-export abstract class WorkItemBase {
+export abstract class WorkItemBaseEntity {
   /**
    * The ID.
    */

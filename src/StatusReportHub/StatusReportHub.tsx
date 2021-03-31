@@ -1,9 +1,10 @@
-import "./PMHubStatus.scss";
+import "./StatusReportHub.scss";
 
 // Library Level
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as SDK from "azure-devops-extension-sdk";
+import { ObservableValue } from "azure-devops-ui/Core/Observable";
 import { Dropdown } from "azure-devops-ui/Dropdown";
 import {
   CustomHeader,
@@ -27,28 +28,26 @@ import {
 } from "azure-devops-ui/Status";
 import { ZeroData } from "azure-devops-ui/ZeroData";
 import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
-import { GroupedItemProvider } from "azure-devops-ui/Utilities/GroupedItemProvider";
 
 // Project Level
-import { Constants } from "../common/Constants";
-import { IPMHubStatusPage } from "./IPMHubStatusPage";
-import { PMHubStatusService } from "./PMHubStatusService";
-import { PMStatusDocument } from "./PMStatusRecord";
-import { PMStatusMenu } from "./PMStatusMenu";
-import { ProjectStatus } from "./ProjectStatus";
-import { ProjectUtils } from "../common/ProjectUtils";
-import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
-import { ObservableValue, ObservableArray } from "azure-devops-ui/Core/Observable";
+import { Constants } from "../Common/Constants";
+import { IStatusReportHubState } from "./IStatusReportHub.state";
+import { StatusEntryEntity } from "./StatusEntry.entity";
+import { ProjectService } from "../Common/Project.service";
+import { SearchResultEntity } from "../Search/SearchResult.entity";
+import { StatusReportService } from "./StatusReport.service";
+import { StatusReportEntity } from "./StatusReport.entity";
+import { StatusReportCommandMenu } from "./StatusReportCommandMenu.ui";
 
 /**
  * The status report page.
  */
-class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
+class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   private statusReportSelection = new DropdownSelection();
   private rowNumber: number = 1;
-  private commandButtons: PMStatusMenu;
+  private commandButtons: StatusReportCommandMenu;
   private static LATEST_REPORT: string = "Latest";
-  private pmHubStatusPage: IPMHubStatusPage;
+  private pmHubStatusPage: IStatusReportHubState;
   private savedReportArray = new ObservableValue<IListBoxItem[]>([]);
 
   constructor(props: {}) {
@@ -56,7 +55,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
     this.pmHubStatusPage = {
       statusReport: undefined,
     };
-    this.commandButtons = new PMStatusMenu();
+    this.commandButtons = new StatusReportCommandMenu();
     this.state = this.pmHubStatusPage;
     this.initEvents();
   }
@@ -83,7 +82,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    */
   public async saveEvent():Promise<void> {
     if (this.state.record) {
-      const record = await PMHubStatusService.saveRecord(this.state.record);
+      const record = await StatusReportService.saveRecord(this.state.record);
       await this.refreshSavedReports();
       this.pmHubStatusPage.record = record;
       this.refreshState();
@@ -98,7 +97,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    */
   public async deleteEvent():Promise<void> {
     if (this.state.record) {
-      await PMHubStatusService.deleteRecord(this.state.record);
+      await StatusReportService.deleteRecord(this.state.record);
       await this.refreshSavedReports();
       await this.loadLatestRecord();
     }
@@ -114,7 +113,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    * Refresh the saved report this.
    */
   private async refreshSavedReports(): Promise<void> {
-    const savedReports = await PMHubStatusService.getListOfRecords();
+    const savedReports = await StatusReportService.getListOfRecords();
     this.savedReportArray.value = this.generateReportList(savedReports);
   }
 
@@ -122,11 +121,11 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    * Load the latest record into the page.
    */
   private async loadLatestRecord(): Promise<void> {
-    const projectStatusData = await PMHubStatusService.getLatestProjectStatuses();
-    const statusDocument: PMStatusDocument = new PMStatusDocument();
+    const projectStatusData = await StatusReportService.getLatestProjectStatuses();
+    const statusDocument: StatusReportEntity = new StatusReportEntity();
     statusDocument.asOf = projectStatusData.asOf;
     this.populateRecordInfo(projectStatusData, statusDocument);
-    this.selectReport(PMHubStatus.LATEST_REPORT);
+    this.selectReport(StatusReportHub.LATEST_REPORT);
     await this.commandButtons.updateButtonStatuses(this.state);
   }
 
@@ -157,11 +156,11 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    * @param statusDocument the status document.
    */
   private populateRecordInfo(
-    statusData: SearchResultTreeNode<ProjectStatus, number>,
-    statusDocument: PMStatusDocument
+    statusData: SearchResultEntity<StatusEntryEntity, number>,
+    statusDocument: StatusReportEntity
   ): void {
     this.pmHubStatusPage.currentSourceQuery = statusData.sourceQuery;
-    this.pmHubStatusPage.statusReport = PMHubStatusService.groupResultData(
+    this.pmHubStatusPage.statusReport = StatusReportService.groupResultData(
       statusData
     );
     this.pmHubStatusPage.currentSourceQuery = statusData.sourceQuery;
@@ -192,9 +191,9 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    * @param projectStatusNode the node to write
    */
   private writeStatusRow(
-    projectStatusNode: SearchResultTreeNode<ProjectStatus, number>
+    projectStatusNode: SearchResultEntity<StatusEntryEntity, number>
   ): JSX.Element {
-    const rowData: ProjectStatus | undefined = projectStatusNode.data;
+    const rowData: StatusEntryEntity | undefined = projectStatusNode.data;
 
     if (rowData === undefined) {
       return (
@@ -216,7 +215,7 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
           <td>
             {rowData.targetDate && (
               <span>
-                {ProjectUtils.formatDateWithNoTime(rowData.targetDate)}
+                {ProjectService.formatDateWithNoTime(rowData.targetDate)}
               </span>
             )}
           </td>
@@ -315,11 +314,11 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
    * @returns a list based off saved documents and pre-appended latest.
    */
   private generateReportList(
-    savedDocuments?: PMStatusDocument[]
+    savedDocuments?: StatusReportEntity[]
   ): IListBoxItem[] {
     const itemList: IListBoxItem[] = [{
       // Add the latest
-      id: PMHubStatus.LATEST_REPORT,
+      id: StatusReportHub.LATEST_REPORT,
       text: "Latest"
     },{
       // Divider
@@ -438,4 +437,4 @@ class PMHubStatus extends React.Component<{}, IPMHubStatusPage> {
   }
 }
 
-ReactDOM.render(<PMHubStatus />, document.getElementById("root"));
+ReactDOM.render(<StatusReportHub />, document.getElementById("root"));

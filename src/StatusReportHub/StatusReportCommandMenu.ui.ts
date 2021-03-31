@@ -1,15 +1,15 @@
 // Library Level
 import { IHeaderCommandBarItem } from "azure-devops-ui/HeaderCommandBar";
 import { IMenuItem, MenuItemType } from "azure-devops-ui/Menu";
-
-// Project Level
-import { IPMHubStatusPage } from "./IPMHubStatusPage";
 import { ObservableValue } from "azure-devops-ui/Core/Observable";
 
+// Project Level
+import { IStatusReportHubState } from "./IStatusReportHub.state";
+
 /**
- * The menu bar for project status page.
+ * The menu bar for status report page.
  */
-export class PMStatusMenu {
+export class StatusReportCommandMenu {
 
   /**
    * The download button
@@ -87,7 +87,7 @@ export class PMStatusMenu {
    *
    * @param currentPage the current page data
    */
-  public updateButtonStatuses(currentPage: IPMHubStatusPage): void {
+  public updateButtonStatuses(currentPage: IStatusReportHubState): void {
     const saveableRecord =
       currentPage.record != undefined && currentPage.record.id === undefined;
     const storedRecord =

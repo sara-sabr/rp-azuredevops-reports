@@ -11,15 +11,15 @@ import {
 } from "azure-devops-extension-api/WorkItemTracking";
 
 // Project Level
-import { Constants } from "./Constants";
-import { ProjectUtils } from "./ProjectUtils";
-import { SearchResultTreeNode } from "./SearchResultTreeNode";
-import { WorkItemBase } from "./WorkItemBase";
+import { Constants } from "../Common/Constants";
+import { ProjectService } from "../Common/Project.service";
+import { SearchResultEntity } from "./SearchResult.entity";
+import { WorkItemBaseEntity } from "../Common/WorkItemBase.entity";
 
 /**
- * Search utilities.
+ * Search service.
  */
-export class SearchUtils {
+export class SearchService {
   /**
    * Get the query url.
    *
@@ -28,7 +28,7 @@ export class SearchUtils {
   static async getQueryURL(
     query: QueryHierarchyItem | undefined
   ): Promise<string> {
-    let url = await ProjectUtils.getBaseUrl();
+    let url = await ProjectService.getBaseUrl();
     if (query == undefined) {
       throw new Error("Query cannot be empty.");
     }
@@ -42,8 +42,8 @@ export class SearchUtils {
    * @param name the query name
    */
   static async getQuery(name: string): Promise<QueryHierarchyItem> {
-    const projectName = await ProjectUtils.getProjectName();
-    return ProjectUtils.WIT_API_CLIENT.getQuery(
+    const projectName = await ProjectService.getProjectName();
+    return ProjectService.WIT_API_CLIENT.getQuery(
       projectName,
       name,
       QueryExpand.Wiql
@@ -57,11 +57,11 @@ export class SearchUtils {
    * @param type the class definition of results expected
    * @param asOf query history if specified
    */
-  static async executeQuery<T extends WorkItemBase>(
+  static async executeQuery<T extends WorkItemBaseEntity>(
     name: string,
     type: { new (): T },
     asOf?: Date
-  ): Promise<SearchResultTreeNode<T, number>> {
+  ): Promise<SearchResultEntity<T, number>> {
     const query = await this.getQuery(name);
 
     if (query.isFolder) {
@@ -70,14 +70,14 @@ export class SearchUtils {
       );
     }
 
-    const rootNode = new SearchResultTreeNode<T, number>(undefined);
-    const nodeMap = new Map<number, SearchResultTreeNode<T, number>>();
+    const rootNode = new SearchResultEntity<T, number>(undefined);
+    const nodeMap = new Map<number, SearchResultEntity<T, number>>();
 
     // Init the root node's data.
     rootNode.populateNodeMap(nodeMap);
     rootNode.sourceQuery = query;
 
-    const projectName = await ProjectUtils.getProjectName();
+    const projectName = await ProjectService.getProjectName();
     let wiql = query.wiql;
 
     if (asOf) {
@@ -85,7 +85,7 @@ export class SearchUtils {
     }
 
     // Get results.
-    const results = await ProjectUtils.WIT_API_CLIENT.queryByWiql(
+    const results = await ProjectService.WIT_API_CLIENT.queryByWiql(
       { query: wiql },
       projectName
     );
@@ -111,7 +111,7 @@ export class SearchUtils {
 
       // Now populate the data as we want to bulk request the data.
       let ids = Array.from(nodeMap.keys());
-      const workItemDataResults = await ProjectUtils.WIT_API_CLIENT.getWorkItemsBatch(
+      const workItemDataResults = await ProjectService.WIT_API_CLIENT.getWorkItemsBatch(
         {
           ids: ids,
           fields: fieldNames,
@@ -140,22 +140,22 @@ export class SearchUtils {
    * @param rootNode the root node
    * @param type the type to instantiate
    */
-  private static processWorkItem<T extends WorkItemBase>(
-    nodeMap: Map<number, SearchResultTreeNode<T, number>>,
+  private static processWorkItem<T extends WorkItemBaseEntity>(
+    nodeMap: Map<number, SearchResultEntity<T, number>>,
     resultsValues: WorkItemReference[],
-    rootNode: SearchResultTreeNode<T, number>,
+    rootNode: SearchResultEntity<T, number>,
     type: { new (): T }
   ): void {
     let workItemReference: WorkItemReference;
     let data: T;
-    let currentNode: SearchResultTreeNode<T, number>;
+    let currentNode: SearchResultEntity<T, number>;
 
     // Loop over the results and create the tree.
     for (let idx = 0; idx < resultsValues.length; idx++) {
       workItemReference = resultsValues[idx];
       data = new type();
       data.id = workItemReference.id;
-      currentNode = new SearchResultTreeNode<T, number>(data);
+      currentNode = new SearchResultEntity<T, number>(data);
       nodeMap.set(data.id, currentNode);
       rootNode.addChildren(currentNode);
     }
@@ -169,22 +169,22 @@ export class SearchUtils {
    * @param rootNode the root node
    * @param type the type to instantiate
    */
-  private static processWorkItemReference<T extends WorkItemBase>(
-    nodeMap: Map<number, SearchResultTreeNode<T, number>>,
+  private static processWorkItemReference<T extends WorkItemBaseEntity>(
+    nodeMap: Map<number, SearchResultEntity<T, number>>,
     resultsValues: WorkItemLink[],
-    rootNode: SearchResultTreeNode<T, number>,
+    rootNode: SearchResultEntity<T, number>,
     type: { new (): T }
   ): void {
     let currentWorkItemLink: WorkItemLink;
     let data: T;
-    let currentNode: SearchResultTreeNode<T, number>;
+    let currentNode: SearchResultEntity<T, number>;
 
     // Loop over the results and create the tree.
     for (let idx = 0; idx < resultsValues.length; idx++) {
       currentWorkItemLink = resultsValues[idx];
       data = new type();
       data.id = currentWorkItemLink.target.id;
-      currentNode = new SearchResultTreeNode<T, number>(data);
+      currentNode = new SearchResultEntity<T, number>(data);
       nodeMap.set(data.id, currentNode);
 
       if (currentWorkItemLink.rel === null) {

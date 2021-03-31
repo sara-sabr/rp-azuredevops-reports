@@ -2,13 +2,13 @@
 import { WorkItem } from "azure-devops-extension-api/WorkItemTracking";
 
 // Project Level
-import { PMHubStatusConfiguration } from "./Configuration";
-import { WorkItemBase } from "../common/WorkItemBase";
+import { StatusReportConfig } from "./StatusReport.config";
+import { WorkItemBaseEntity } from "../Common/WorkItemBase.entity";
 
 /**
- * The project status on the status report page.
+ * The status entry for the status report page.
  */
-export class ProjectStatus extends WorkItemBase {
+export class StatusEntryEntity extends WorkItemBaseEntity {
   /**
    * The current status.
    */
@@ -41,13 +41,13 @@ export class ProjectStatus extends WorkItemBase {
 
   public populateFromWorkItem(workItem: WorkItem): void {
     super.populateFromWorkItem(workItem);
-    this.status = workItem.fields[PMHubStatusConfiguration.getFieldStatus()];
-    this.riskLevel = workItem.fields[PMHubStatusConfiguration.getFieldRisk()];
-    this.action = workItem.fields[PMHubStatusConfiguration.getFieldAction()];
+    this.status = workItem.fields[StatusReportConfig.getFieldStatus()];
+    this.riskLevel = workItem.fields[StatusReportConfig.getFieldRisk()];
+    this.action = workItem.fields[StatusReportConfig.getFieldAction()];
     this.objective =
-      workItem.fields[PMHubStatusConfiguration.getFieldObjective()];
+      workItem.fields[StatusReportConfig.getFieldObjective()];
     this.targetDate =
-      workItem.fields[PMHubStatusConfiguration.getFieldTargetDate()];
+      workItem.fields[StatusReportConfig.getFieldTargetDate()];
   }
 
   /**

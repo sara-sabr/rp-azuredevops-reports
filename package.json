@@ -1,11 +1,11 @@
 {
-  "name": "azboards-workitem-automation",
-  "description": "Work Item Automation",
+  "name": "azboards-qol-automation",
+  "description": "Azure Boards Quality of Life Automation",
   "author": "ESDC IT RP",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sara-sabr/azboards-workitem-automation"
+    "url": "https://github.com/sara-sabr/AzBoards-QoL-Automation"
   },
   "scripts": {
     "clean": "rimraf ./dist ./out",

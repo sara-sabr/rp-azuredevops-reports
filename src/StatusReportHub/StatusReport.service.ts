@@ -2,19 +2,20 @@
 import { QueryType } from "azure-devops-extension-api/WorkItemTracking";
 
 // Project level
-import { Constants } from "../common/Constants";
-import { Impediments } from "./Impediments";
-import { PMHubStatusConfiguration } from "./Configuration";
-import { PMStatusDocument } from "./PMStatusRecord";
-import { ProjectStatus } from "./ProjectStatus";
-import { ProjectUtils } from "../common/ProjectUtils";
-import { SearchResultTreeNode } from "../common/SearchResultTreeNode";
-import { SearchUtils } from "../common/SearchUtils";
+import { Constants } from "../Common/Constants";
+import { ImpedimentsEntity } from "./Impediments.entity";
+import { StatusReportConfig } from "./StatusReport.config";
+import { StatusReportEntity } from "./StatusReport.entity";
+import { StatusEntryEntity } from "./StatusEntry.entity";
+import { ProjectService } from "../Common/Project.service";
+import { SearchResultEntity } from "../Search/SearchResult.entity";
+import { SearchService } from "../Search/Search.service";
+import { StatusReportRepository } from "./StatusReport.repository";
 
 /**
  * Project status service page.
  */
-export class PMHubStatusService {
+export class StatusReportService {
   private static COLLECTION_ID = "status-report";
 
   /**
@@ -23,50 +24,28 @@ export class PMHubStatusService {
    * @param sortDesc returns results in descendig order, otherwise ascending.
    * @returns a list of status records.
    */
-  public static async getListOfRecords(sortDesc = true): Promise<PMStatusDocument[]> {
-    const dataService = await ProjectUtils.getDatastoreService();
-    const result = (await dataService.getDocuments(this.COLLECTION_ID, {
-      defaultValue: []
-    })) as PMStatusDocument[];
-
-    const compareValue = sortDesc ? 1 : -1;
-
-    // In place sort.
-    result.sort((a,b):number => {
-      if (a.name < b.name) {
-        return compareValue;
-      } else if (a.name > b.name) {
-        return compareValue * -1;
-      }
-      return 0;
-    })
-
-    return result;
+  public static async getListOfRecords(sortDesc = true): Promise<StatusReportEntity[]> {
+    const recordList = await StatusReportRepository.getListOfRecords(sortDesc);
+    return recordList;
   }
 
   /**
    * Delete all records.
    */
   public static async deleteAllRecords(): Promise<void> {
-    const records = await this.getListOfRecords();
-    const dataService = await ProjectUtils.getDatastoreService();
-
-    for (let r of records) {
-      if (r.id) {
-        await dataService.deleteDocument(this.COLLECTION_ID, r.id);
-      }
-    }
+    await StatusReportRepository.deleteAllRecords();
   }
 
   /**
    * Delete a record.
    *
-   * @param record the record to delete.
+   * @param record the record to delete with the id field spsecified.
    */
-  public static async deleteRecord(record: PMStatusDocument): Promise<void> {
-    const dataService = await ProjectUtils.getDatastoreService();
+  public static async deleteRecord(record: StatusReportEntity): Promise<void> {
     if (record && record.id) {
-      await dataService.deleteDocument(this.COLLECTION_ID, record.id);
+      await StatusReportRepository.deleteRecord(record);
+    } else {
+      throw new Error ("Cannot delete a record that doesn't even exist.");
     }
   }
 
@@ -77,22 +56,16 @@ export class PMHubStatusService {
    * @returns the updated record (Does not change the original)
    */
   public static async saveRecord(
-    record: PMStatusDocument
-  ): Promise<PMStatusDocument> {
-    const dataService = await ProjectUtils.getDatastoreService();
-
+    record: StatusReportEntity
+  ): Promise<StatusReportEntity> {
     if (record.id) {
       // Update.
-      record = await dataService.updateDocument(this.COLLECTION_ID, record);
-    } else {
+      await StatusReportRepository.updateRecord(record);
+    } else if (record.asOf) {
       // Create.
-      if (record.asOf) {
-        record.name = ProjectUtils.formatDate(record.asOf);
-        record.id = ProjectUtils.formatDate(record.asOf, false);
-        record.id = record.asOf.getTime().toString();
-      }
-
-      record = await dataService.createDocument(this.COLLECTION_ID, record);
+      record.name = ProjectService.formatDate(record.asOf);
+      record.id = record.asOf.getTime().toString();
+      record = await StatusReportRepository.createRecord(record);
     }
 
     return record;
@@ -109,18 +82,18 @@ export class PMHubStatusService {
    * @param currentStatus the current status report.
    */
   public static groupResultData(
-    currentStatus: SearchResultTreeNode<ProjectStatus, number>
-  ): Map<string, SearchResultTreeNode<ProjectStatus, number>[]> {
-    const reportGrouping = PMHubStatusConfiguration.getStatusReportGrouping();
+    currentStatus: SearchResultEntity<StatusEntryEntity, number>
+  ): Map<string, SearchResultEntity<StatusEntryEntity, number>[]> {
+    const reportGrouping = StatusReportConfig.getStatusReportGrouping();
 
     if (
       reportGrouping.startsWith(
-        PMHubStatusConfiguration.STATUS_REPORT_GROUPING_PREFIX_BY_FIELD
+        StatusReportConfig.STATUS_REPORT_GROUPING_PREFIX_BY_FIELD
       )
     ) {
       // Configuration - Mode 1 (see function description)
       const fieldName = reportGrouping.substring(
-        PMHubStatusConfiguration.STATUS_REPORT_GROUPING_PREFIX_BY_FIELD.length
+        StatusReportConfig.STATUS_REPORT_GROUPING_PREFIX_BY_FIELD.length
       );
 
       if (currentStatus.sourceQuery?.queryType === QueryType.OneHop) {
@@ -130,7 +103,7 @@ export class PMHubStatusService {
       }
     } else if (
       // Configuration - Mode 2 (see function description)
-      reportGrouping === PMHubStatusConfiguration.STATUS_REPORT_GROUPING_QUERY
+      reportGrouping === StatusReportConfig.STATUS_REPORT_GROUPING_QUERY
     ) {
       if (currentStatus.sourceQuery?.queryType === QueryType.OneHop) {
         return this.groupResultDataByTopNodes(currentStatus);
@@ -176,12 +149,12 @@ export class PMHubStatusService {
    * @param fieldName the field name
    */
   private static groupResultDataByFieldHelper(
-    children: SearchResultTreeNode<ProjectStatus, number>[],
-    grouping: Map<string, SearchResultTreeNode<ProjectStatus, number>[]>,
+    children: SearchResultEntity<StatusEntryEntity, number>[],
+    grouping: Map<string, SearchResultEntity<StatusEntryEntity, number>[]>,
     fieldName: string
   ): void {
     let fieldValue;
-    let dataArray: SearchResultTreeNode<ProjectStatus, number>[] | undefined;
+    let dataArray: SearchResultEntity<StatusEntryEntity, number>[] | undefined;
 
     for (let child of children) {
       fieldValue = child.data?.sourceWorkItem?.fields[fieldName];
@@ -208,12 +181,12 @@ export class PMHubStatusService {
    * @param fieldName the field name
    */
   private static groupResultDataByFieldWhenFlat(
-    currentStatus: SearchResultTreeNode<ProjectStatus, number>,
+    currentStatus: SearchResultEntity<StatusEntryEntity, number>,
     fieldName: string
-  ): Map<string, SearchResultTreeNode<ProjectStatus, number>[]> {
+  ): Map<string, SearchResultEntity<StatusEntryEntity, number>[]> {
     const grouping: Map<
       string,
-      SearchResultTreeNode<ProjectStatus, number>[]
+      SearchResultEntity<StatusEntryEntity, number>[]
     > = new Map();
 
     this.groupResultDataByFieldHelper(
@@ -231,12 +204,12 @@ export class PMHubStatusService {
    * @param fieldName the field name
    */
   private static groupResultDataByFieldWhenTree(
-    currentStatus: SearchResultTreeNode<ProjectStatus, number>,
+    currentStatus: SearchResultEntity<StatusEntryEntity, number>,
     fieldName: string
-  ): Map<string, SearchResultTreeNode<ProjectStatus, number>[]> {
+  ): Map<string, SearchResultEntity<StatusEntryEntity, number>[]> {
     const grouping: Map<
       string,
-      SearchResultTreeNode<ProjectStatus, number>[]
+      SearchResultEntity<StatusEntryEntity, number>[]
     > = new Map();
 
     for (let node of currentStatus.children) {
@@ -254,13 +227,13 @@ export class PMHubStatusService {
    * @param currentStatus the current status report.
    */
   private static groupResultDataByTopNodes(
-    currentStatus: SearchResultTreeNode<ProjectStatus, number>
-  ): Map<string, SearchResultTreeNode<ProjectStatus, number>[]> {
+    currentStatus: SearchResultEntity<StatusEntryEntity, number>
+  ): Map<string, SearchResultEntity<StatusEntryEntity, number>[]> {
     const grouping: Map<
       string,
-      SearchResultTreeNode<ProjectStatus, number>[]
+      SearchResultEntity<StatusEntryEntity, number>[]
     > = new Map();
-    let dataArray: SearchResultTreeNode<ProjectStatus, number>[];
+    let dataArray: SearchResultEntity<StatusEntryEntity, number>[];
 
     for (let node of currentStatus.children) {
       if (node.data) {
@@ -282,7 +255,7 @@ export class PMHubStatusService {
    * @param currentStatus the current status.
    */
   private static async populateImpediments(
-    currentStatus: SearchResultTreeNode<ProjectStatus, number>
+    currentStatus: SearchResultEntity<StatusEntryEntity, number>
   ): Promise<void> {
     const nodeMap = currentStatus.nodeMap;
 
@@ -291,15 +264,15 @@ export class PMHubStatusService {
     }
 
     // Get the list of impediments.
-    const impedimentsResults: SearchResultTreeNode<
-      Impediments,
+    const impedimentsResults: SearchResultEntity<
+      ImpedimentsEntity,
       number
-    > = await SearchUtils.executeQuery(
-      PMHubStatusConfiguration.getQueryImpediments(),
-      Impediments
+    > = await SearchService.executeQuery(
+      StatusReportConfig.getQueryImpediments(),
+      ImpedimentsEntity
     );
     let relatedId: number;
-    let relatedNode: SearchResultTreeNode<ProjectStatus, number> | undefined;
+    let relatedNode: SearchResultEntity<StatusEntryEntity, number> | undefined;
 
     for (let node of impedimentsResults.children) {
       if (node === undefined || node.data === undefined) {
@@ -333,7 +306,7 @@ export class PMHubStatusService {
    * @returns the latest project statues.
    */
   static async getLatestProjectStatuses(): Promise<
-    SearchResultTreeNode<ProjectStatus, number>
+    SearchResultEntity<StatusEntryEntity, number>
   > {
     return this.getProjectStatus();
   }
@@ -345,18 +318,18 @@ export class PMHubStatusService {
    */
   static async getProjectStatus(
     asOf?: Date
-  ): Promise<SearchResultTreeNode<ProjectStatus, number>> {
-    const projectStatus: SearchResultTreeNode<
-      ProjectStatus,
+  ): Promise<SearchResultEntity<StatusEntryEntity, number>> {
+    const projectStatus: SearchResultEntity<
+      StatusEntryEntity,
       number
-    > = await SearchUtils.executeQuery(
-      PMHubStatusConfiguration.getQueryForLatestStatus(),
-      ProjectStatus,
+    > = await SearchService.executeQuery(
+      StatusReportConfig.getQueryForLatestStatus(),
+      StatusEntryEntity,
       asOf
     );
 
     if (!projectStatus.isEmpty()) {
-      await PMHubStatusService.populateImpediments(projectStatus);
+      await StatusReportService.populateImpediments(projectStatus);
     }
 
     return projectStatus;

@@ -2,12 +2,12 @@
 import { QueryHierarchyItem } from "azure-devops-extension-api/WorkItemTracking";
 
 // Project Level
-import { TreeNode } from "./TreeNode";
+import { TreeNode } from "../Common/TreeNode";
 
 /**
  * Used to represent a search result.
  */
-export class SearchResultTreeNode<T, Y> extends TreeNode<T, Y> {
+export class SearchResultEntity<T, Y> extends TreeNode<T, Y> {
   /**
    * The source of the query results.
    */

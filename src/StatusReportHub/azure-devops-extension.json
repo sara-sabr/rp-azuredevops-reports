@@ -1,0 +1,18 @@
+{
+  "contributions": [
+    {
+      "id": "esdc.it-rp.itrp-status-report-hub",
+      "type": "ms.vss-web.hub",
+      "targets": [".esdc.it.rp-reporting-hub-group"],
+      "properties": {
+        "name": "Status Report",
+        "uri": "dist/StatusReportHub/StatusReportHub.html",
+        "order": 100,
+        "icon": {
+          "dark": "img/StatusReportHub.png",
+          "light": "img/StatusReportHub.png"
+        }
+      }
+    }
+  ]
+}

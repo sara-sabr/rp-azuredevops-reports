@@ -1,7 +1,7 @@
 /**
  * The record being saved into Azure Boards.
  */
-export class PMStatusDocument {
+export class StatusReportEntity {
   /**
    * The document ID.
    */
