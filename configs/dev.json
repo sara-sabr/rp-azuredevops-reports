@@ -1,6 +1,6 @@
 {
-  "id": "azboards-work-item-automation-dev",
+  "id": "azboards-qol-automation-dev",
   "public": false,
   "baseUri": "https://localhost:3000",
-  "name": "Development-AzBoards Work Item Automation"
+  "name": "Development-AzBoards QoL Automation"
 }

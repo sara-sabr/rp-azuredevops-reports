@@ -1,0 +1,17 @@
+{
+  "contributions": [
+    {
+      "id": "esdc.it.rp-reporting-hub-group",
+      "type": "ms.vss-web.hub-group",
+      "description": "Adds a 'Reporting' hub group at the project/team-level",
+      "targets": ["ms.vss-web.project-hub-groups-collection"],
+      "properties": {
+        "name": "Reporting",
+        "icon": {
+          "dark": "img/ReportingGroup.png",
+          "light": "img/ReportingGroup.png"
+        }
+      }
+    }
+  ]
+}

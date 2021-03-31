@@ -1,8 +1,8 @@
 {
   "manifestVersion": 1,
-  "version": "0.0.27",
-  "name": "AzBoards Work Item Automation",
-  "description": "Azure Boards Work Item Automation",
+  "version": "0.0.1",
+  "name": "AzBoards QoL Automation",
+  "description": "Azure Boards Quality of Life Automation",
   "publisher": "ESDC-IT-SABR-RP",
   "demands": ["api-version/3.0"],
   "categories": ["Azure Boards"],
@@ -16,15 +16,15 @@
   ],
   "links": {
     "repository": {
-      "uri": "https://github.com/sara-sabr/AzBoards-WorkItem-Automation"
+      "uri": "https://github.com/sara-sabr/AzBoards-QoL-Automation"
     },
     "issues": {
-      "uri": "https://github.com/sara-sabr/AzBoards-WorkItem-Automation/issues"
+      "uri": "https://github.com/sara-sabr/AzBoards-QoL-Automation/issues"
     }
   },
   "repository": {
     "type": "git",
-    "uri": "https://github.com/sara-sabr/AzBoards-WorkItem-Automation/"
+    "uri": "https://github.com/sara-sabr/AzBoards-QoL-Automation/"
   },
   "branding": {
     "color": "rgb(51,65,133)",
@@ -57,6 +57,10 @@
     },
     {
       "path": "img",
+      "addressable": true
+    },
+    {
+      "path": "i18n",
       "addressable": true
     }
   ]
