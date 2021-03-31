@@ -5,12 +5,12 @@ import { ObservableValue } from "azure-devops-ui/Core/Observable";
 
 // Project Level
 import { IStatusReportHubState } from "./IStatusReportHub.state";
+import { StatusReportService } from "./StatusReport.service";
 
 /**
  * The menu bar for status report page.
  */
 export class StatusReportCommandMenu {
-
   /**
    * The download button
    */
@@ -75,12 +75,14 @@ export class StatusReportCommandMenu {
   };
 
   /** Used to trigger update. */
-  buttons: ObservableValue<IHeaderCommandBarItem[]> = new ObservableValue([this.downloadButton,
+  buttons: ObservableValue<IHeaderCommandBarItem[]> = new ObservableValue([
+    this.downloadButton,
     this.shareButton,
     this.saveButton,
     this.approveButton,
     { id: "separator", itemType: MenuItemType.Divider },
-    this.deleteButton]);
+    this.deleteButton
+  ]);
 
   /**
    * Update the button states.
@@ -89,9 +91,13 @@ export class StatusReportCommandMenu {
    */
   public updateButtonStatuses(currentPage: IStatusReportHubState): void {
     const saveableRecord =
-      currentPage.record != undefined && currentPage.record.id === undefined;
+      currentPage.record != undefined &&
+      (currentPage.record.approved === undefined ||
+        !currentPage.record.approved);
     const storedRecord =
-      currentPage.record != undefined && currentPage.record.id != undefined;
+      currentPage.record != undefined &&
+      currentPage.record.id != undefined &&
+      currentPage.record.id != StatusReportService.LATEST_RECORD.id;
 
     this.saveButton.disabled = !saveableRecord;
     this.deleteButton.disabled = !storedRecord;

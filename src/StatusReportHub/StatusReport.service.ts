@@ -16,7 +16,14 @@ import { StatusReportRepository } from "./StatusReport.repository";
  * Project status service page.
  */
 export class StatusReportService {
-  private static COLLECTION_ID = "status-report";
+  /**
+   * The latest report record.
+   */
+  public static readonly LATEST_RECORD: StatusReportEntity = {
+    id: "Latest",
+    asOf: undefined,
+    name: "Latest"
+  };
 
   /**
    * Get a list of records.
@@ -24,7 +31,9 @@ export class StatusReportService {
    * @param sortDesc returns results in descendig order, otherwise ascending.
    * @returns a list of status records.
    */
-  public static async getListOfRecords(sortDesc = true): Promise<StatusReportEntity[]> {
+  public static async getListOfRecords(
+    sortDesc = true
+  ): Promise<StatusReportEntity[]> {
     const recordList = await StatusReportRepository.getListOfRecords(sortDesc);
     return recordList;
   }
@@ -45,7 +54,7 @@ export class StatusReportService {
     if (record && record.id) {
       await StatusReportRepository.deleteRecord(record);
     } else {
-      throw new Error ("Cannot delete a record that doesn't even exist.");
+      throw new Error("Cannot delete a record that doesn't even exist.");
     }
   }
 
@@ -58,14 +67,16 @@ export class StatusReportService {
   public static async saveRecord(
     record: StatusReportEntity
   ): Promise<StatusReportEntity> {
-    if (record.id) {
+    if (record.id && record.id !== StatusReportService.LATEST_RECORD.id) {
       // Update.
-      await StatusReportRepository.updateRecord(record);
+      record = await StatusReportRepository.updateRecord(record);
     } else if (record.asOf) {
       // Create.
-      record.name = ProjectService.formatDate(record.asOf);
-      record.id = record.asOf.getTime().toString();
-      record = await StatusReportRepository.createRecord(record);
+      const newRecord = new StatusReportEntity();
+      newRecord.asOf = record.asOf;
+      newRecord.name = ProjectService.formatDate(record.asOf);
+      newRecord.id = record.asOf.getTime().toString();
+      record = await StatusReportRepository.createRecord(newRecord);
     }
 
     return record;
@@ -301,14 +312,16 @@ export class StatusReportService {
   }
 
   /**
-   * Get the latest project status.
+   * Get the latest status report entity definition.
    *
-   * @returns the latest project statues.
+   * @returns the latest status report entity definition.
    */
-  static async getLatestProjectStatuses(): Promise<
-    SearchResultEntity<StatusEntryEntity, number>
-  > {
-    return this.getProjectStatus();
+  static getLatestStatusReport(): StatusReportEntity {
+    return {
+      id: undefined,
+      name: "Latest",
+      asOf: undefined
+    };
   }
 
   /**
