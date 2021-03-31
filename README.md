@@ -1,5 +1,8 @@
 # Azure DevOps Extension - Boards - Quality of Life Automation
 
+[![Development](https://github.com/sara-sabr/AzBoards-QoL-Automation/actions/workflows/development.yml/badge.svg)](https://github.com/sara-sabr/AzBoards-QoL-Automation/actions/workflows/development.yml)
+[![Production](https://github.com/sara-sabr/AzBoards-QoL-Automation/actions/workflows/production.yml/badge.svg)](https://github.com/sara-sabr/AzBoards-QoL-Automation/actions/workflows/production.yml)
+
 This extension enables the capability to automate some stuff for us.
 
 Features:

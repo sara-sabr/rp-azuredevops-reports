@@ -1,4 +1,4 @@
-name: Deploy Development
+name: Development
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run compile
+      - run: npm run compile:dev
 
       - run: ./publish.sh
         env:
