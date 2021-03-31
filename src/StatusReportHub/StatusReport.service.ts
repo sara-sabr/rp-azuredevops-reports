@@ -22,8 +22,8 @@ export class StatusReportService {
   public static readonly LATEST_RECORD: StatusReportEntity = {
     id: "Latest",
     asOf: undefined,
-    name: "Latest",
-  }
+    name: "Latest"
+  };
 
   /**
    * Get a list of records.
@@ -31,7 +31,9 @@ export class StatusReportService {
    * @param sortDesc returns results in descendig order, otherwise ascending.
    * @returns a list of status records.
    */
-  public static async getListOfRecords(sortDesc = true): Promise<StatusReportEntity[]> {
+  public static async getListOfRecords(
+    sortDesc = true
+  ): Promise<StatusReportEntity[]> {
     const recordList = await StatusReportRepository.getListOfRecords(sortDesc);
     return recordList;
   }
@@ -52,7 +54,7 @@ export class StatusReportService {
     if (record && record.id) {
       await StatusReportRepository.deleteRecord(record);
     } else {
-      throw new Error ("Cannot delete a record that doesn't even exist.");
+      throw new Error("Cannot delete a record that doesn't even exist.");
     }
   }
 
@@ -314,12 +316,12 @@ export class StatusReportService {
    *
    * @returns the latest status report entity definition.
    */
-  static getLatestStatusReport():StatusReportEntity {
+  static getLatestStatusReport(): StatusReportEntity {
     return {
       id: undefined,
       name: "Latest",
       asOf: undefined
-    }
+    };
   }
 
   /**

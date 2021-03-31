@@ -7,7 +7,7 @@ import to from "../Common/PromiseWrap";
  * All data save/load happens in the repository.
  */
 export class StatusReportRepository {
-    private static COLLECTION_ID = "status-report";
+  private static COLLECTION_ID = "status-report";
 
   /**
    * Get a list of records.
@@ -15,36 +15,40 @@ export class StatusReportRepository {
    * @param sortDesc returns results in descendig order, otherwise ascending.
    * @returns a list of status records.
    */
-  public static async getListOfRecords(sortDesc = true): Promise<StatusReportEntity[]> {
+  public static async getListOfRecords(
+    sortDesc = true
+  ): Promise<StatusReportEntity[]> {
     const dataService = await ProjectService.getDatastoreService();
     try {
-        const [error, result] = (await to(dataService.getDocuments(this.COLLECTION_ID, {
-            defaultValue: []
-          }))) as [Error, StatusReportEntity[] | undefined];
+      const [error, result] = (await to(
+        dataService.getDocuments(this.COLLECTION_ID, {
+          defaultValue: []
+        })
+      )) as [Error, StatusReportEntity[] | undefined];
 
-          if (error === null && result) {
-            const compareValue = sortDesc ? 1 : -1;
+      if (error === null && result) {
+        const compareValue = sortDesc ? 1 : -1;
 
-            // In place sort.
-            result.sort((a,b):number => {
-              if (a.name < b.name) {
-                return compareValue;
-              } else if (a.name > b.name) {
-                return compareValue * -1;
-              }
-              return 0;
-            })
-
-            return result;
+        // In place sort.
+        result.sort((a, b): number => {
+          if (a.name < b.name) {
+            return compareValue;
+          } else if (a.name > b.name) {
+            return compareValue * -1;
           }
+          return 0;
+        });
 
-          // If 404, just provide empty as that happens when no collections already exist.
-          // Example, no saves every done by this extension.
-          //
-          return [];
+        return result;
+      }
+
+      // If 404, just provide empty as that happens when no collections already exist.
+      // Example, no saves every done by this extension.
+      //
+      return [];
     } catch (e) {
-        // Happens when first load as no records exist.
-        return [];
+      // Happens when first load as no records exist.
+      return [];
     }
   }
 

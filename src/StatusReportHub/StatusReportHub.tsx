@@ -20,7 +20,11 @@ import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
 import { Observer } from "azure-devops-ui/Observer";
 import { Page } from "azure-devops-ui/Page";
 import { Pill } from "azure-devops-ui/Pill";
-import { Spinner, SpinnerSize, SpinnerOrientation } from "azure-devops-ui/Spinner";
+import {
+  Spinner,
+  SpinnerSize,
+  SpinnerOrientation
+} from "azure-devops-ui/Spinner";
 import {
   IStatusProps,
   Status,
@@ -47,7 +51,8 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   /**
    * The latest report record.
    */
-  private static readonly LATEST_RECORD: StatusReportEntity = StatusReportService.LATEST_RECORD;
+  private static readonly LATEST_RECORD: StatusReportEntity =
+    StatusReportService.LATEST_RECORD;
 
   /**
    * The status report dropdown selected
@@ -82,7 +87,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
     super(props);
     this.statusPageHub = {
       record: StatusReportService.getLatestStatusReport(),
-      statusReport: undefined,
+      statusReport: undefined
     };
     this.commandButtons = new StatusReportCommandMenu();
     this.state = this.statusPageHub;
@@ -122,7 +127,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   /**
    * Save button pressed, so save the record.
    */
-  public async eventHanlderSaveButton():Promise<void> {
+  public async eventHanlderSaveButton(): Promise<void> {
     if (this.state.record) {
       this.showInProgress();
 
@@ -143,7 +148,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   /**
    * Delete button pressed, so delete the record and refresh with latest.
    */
-  public async eventHandlerDeleteButton():Promise<void> {
+  public async eventHandlerDeleteButton(): Promise<void> {
     if (this.state.record) {
       this.showInProgress();
 
@@ -160,7 +165,10 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
    * @param event the event that happened
    * @param item the item selected
    */
-  public eventHandlerStatusReportSelection(event: React.SyntheticEvent<HTMLElement>, item: IListBoxItem):void {
+  public eventHandlerStatusReportSelection(
+    event: React.SyntheticEvent<HTMLElement>,
+    item: IListBoxItem
+  ): void {
     if (item.data) {
       this.showInProgress();
       this.statusPageHub.record = item.data as StatusReportEntity;
@@ -171,10 +179,10 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   /**
    * Bring up the inprogress.
    */
-  private showInProgress():void {
+  private showInProgress(): void {
     this.statusPageHub.statusReport = undefined;
     this.refreshState();
-}
+  }
 
   /**
    * Refresh the saved report this.
@@ -213,7 +221,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
    *
    * @param id the id to select
    */
-  private selectReport(id: string | undefined):void {
+  private selectReport(id: string | undefined): void {
     if (id === undefined) {
       return;
     }
@@ -390,21 +398,23 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   ): IListBoxItem[] {
     const itemList: IListBoxItem[] = [
       {
-      // Add the latest
-      id: StatusReportHub.LATEST_RECORD.id as string,
-      text: StatusReportHub.LATEST_RECORD.name,
-      data: StatusReportHub.LATEST_RECORD
-    },{
-      // Divider
-      id: "divider",
-      type: ListBoxItemType.Divider,
-    }];
+        // Add the latest
+        id: StatusReportHub.LATEST_RECORD.id as string,
+        text: StatusReportHub.LATEST_RECORD.name,
+        data: StatusReportHub.LATEST_RECORD
+      },
+      {
+        // Divider
+        id: "divider",
+        type: ListBoxItemType.Divider
+      }
+    ];
 
     if (savedDocuments && savedDocuments.length > 0) {
       itemList.push({
         id: "Saved Reports",
         type: ListBoxItemType.Header,
-        text: "Saved Reports",
+        text: "Saved Reports"
       });
 
       for (const report of savedDocuments) {
@@ -466,7 +476,10 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
                 <tr>
                   <td colSpan={3}>
                     <div className="flex-row v-align-middle justify-center full-size">
-                      <Spinner size={SpinnerSize.large} label="Please wait ..." />
+                      <Spinner
+                        size={SpinnerSize.large}
+                        label="Please wait ..."
+                      />
                     </div>
                   </td>
                 </tr>

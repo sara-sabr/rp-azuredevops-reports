@@ -44,10 +44,8 @@ export class StatusEntryEntity extends WorkItemBaseEntity {
     this.status = workItem.fields[StatusReportConfig.getFieldStatus()];
     this.riskLevel = workItem.fields[StatusReportConfig.getFieldRisk()];
     this.action = workItem.fields[StatusReportConfig.getFieldAction()];
-    this.objective =
-      workItem.fields[StatusReportConfig.getFieldObjective()];
-    this.targetDate =
-      workItem.fields[StatusReportConfig.getFieldTargetDate()];
+    this.objective = workItem.fields[StatusReportConfig.getFieldObjective()];
+    this.targetDate = workItem.fields[StatusReportConfig.getFieldTargetDate()];
   }
 
   /**
