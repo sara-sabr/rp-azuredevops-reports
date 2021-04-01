@@ -15,6 +15,7 @@ import {
   TitleSize
 } from "azure-devops-ui/Header";
 import { HeaderCommandBar } from "azure-devops-ui/HeaderCommandBar";
+import { Link } from "azure-devops-ui/Link";
 import { IListBoxItem, ListBoxItemType } from "azure-devops-ui/ListBox";
 import { Observer } from "azure-devops-ui/Observer";
 import { Page } from "azure-devops-ui/Page";
@@ -316,7 +317,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
               excludeFocusZone={true}
               excludeTabStop={true}
             >
-              <a href={this.witItemUrlPrefix + rowData.id} target="_blank">#{rowData.id}</a>: {rowData.title}
+              <Link href={this.witItemUrlPrefix + rowData.id} target="_blank">#{rowData.id}</Link>: {rowData.title}
             </Pill>
             <p>
               <b>Objective</b>
@@ -333,7 +334,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
               <ul>
                 {rowData.keyIssues.map((value) => {
                   return <li key={value.id}>
-                    <a href={this.witItemUrlPrefix + value.id} target="_blank">#{value.id}</a>: {value.title}
+                    <Link href={this.witItemUrlPrefix + value.id} target="_blank">#{value.id}</Link>: {value.title}
                   </li>;
                 })}
               </ul>
@@ -508,9 +509,9 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
                           <div>
                             <p>
                               Please ensure the{" "}
-                              <a href={this.state.queryUrl} target={"_top"}>
+                              <Link href={this.state.queryUrl} target={"_top"}>
                                 {this.state.currentSourceQuery?.name}
-                              </a>{" "}
+                              </Link>{" "}
                               query actually produces a result.
                             </p>
                           </div>
