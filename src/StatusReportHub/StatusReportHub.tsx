@@ -16,14 +16,12 @@ import {
 } from "azure-devops-ui/Header";
 import { HeaderCommandBar } from "azure-devops-ui/HeaderCommandBar";
 import { IListBoxItem, ListBoxItemType } from "azure-devops-ui/ListBox";
-import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
 import { Observer } from "azure-devops-ui/Observer";
 import { Page } from "azure-devops-ui/Page";
 import { Pill } from "azure-devops-ui/Pill";
 import {
   Spinner,
-  SpinnerSize,
-  SpinnerOrientation
+  SpinnerSize
 } from "azure-devops-ui/Spinner";
 import {
   IStatusProps,
@@ -49,12 +47,6 @@ import { StatusReportCommandMenu } from "./StatusReportCommandMenu.ui";
  */
 class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   /**
-   * The latest report record.
-   */
-  private static readonly LATEST_RECORD: StatusReportEntity =
-    StatusReportService.LATEST_RECORD;
-
-  /**
    * The status report dropdown selected
    */
   private statusReportSelection = new DropdownSelection();
@@ -65,7 +57,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   private rowNumber: number = 1;
 
   /**
-   * Menu Buttons
+   * Menu Buttons.
    */
   private commandButtons: StatusReportCommandMenu;
 
@@ -83,15 +75,21 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
    */
   private savedReportArray = new ObservableValue<IListBoxItem[]>([]);
 
+  /**
+   * Work item URL prefix
+   */
+  private witItemUrlPrefix:string = "";
+
   constructor(props: {}) {
     super(props);
     this.statusPageHub = {
-      record: StatusReportService.getLatestStatusReport(),
+      record: StatusReportService.LATEST_RECORD,
       statusReport: undefined
     };
     this.commandButtons = new StatusReportCommandMenu();
     this.state = this.statusPageHub;
     this.initEvents();
+    this.getEditUrl();
   }
 
   /**
@@ -176,6 +174,10 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
     }
   }
 
+  private async getEditUrl():Promise<void> {
+    this.witItemUrlPrefix = await ProjectService.generateWitEditUrl("");
+  }
+
   /**
    * Bring up the inprogress.
    */
@@ -212,7 +214,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
    * Load the latest record into the page.
    */
   private async loadLatestRecord(): Promise<void> {
-    this.statusPageHub.record = StatusReportHub.LATEST_RECORD;
+    this.statusPageHub.record = StatusReportService.LATEST_RECORD;
     await this.loadRecord();
   }
 
@@ -308,7 +310,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
               excludeFocusZone={true}
               excludeTabStop={true}
             >
-              Activity Area #{this.rowNumber++}: {rowData.title}
+              <a href={this.witItemUrlPrefix + rowData.id} target="_blank">#{rowData.id}</a>: {rowData.title}
             </Pill>
             <p>
               <b>Objective</b>
@@ -323,8 +325,10 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
             </p>
             {rowData.keyIssues.length > 0 && (
               <ul>
-                {rowData.keyIssues.map((value, index) => {
-                  return <li key={index}>{value}</li>;
+                {rowData.keyIssues.map((value) => {
+                  return <li key={value.id}>
+                    <a href={this.witItemUrlPrefix + value.id} target="_blank">#{value.id}</a>: {value.title}
+                  </li>;
                 })}
               </ul>
             )}
@@ -345,7 +349,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
         <tr className="status-report-grouped-header-row">
           <th colSpan={3}>{groupTitle}</th>
         </tr>
-        {this.state.statusReport?.get(groupTitle)?.map((value, index) => {
+        {this.state.statusReport?.get(groupTitle)?.map((value) => {
           return this.writeStatusRow(value);
         })}
       </tbody>
@@ -399,9 +403,9 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
     const itemList: IListBoxItem[] = [
       {
         // Add the latest
-        id: StatusReportHub.LATEST_RECORD.id as string,
-        text: StatusReportHub.LATEST_RECORD.name,
-        data: StatusReportHub.LATEST_RECORD
+        id: StatusReportService.LATEST_RECORD.id as string,
+        text: StatusReportService.LATEST_RECORD.name,
+        data: StatusReportService.LATEST_RECORD
       },
       {
         // Divider

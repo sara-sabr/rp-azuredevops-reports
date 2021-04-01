@@ -6,6 +6,7 @@ import { ObservableValue } from "azure-devops-ui/Core/Observable";
 // Project Level
 import { IStatusReportHubState } from "./IStatusReportHub.state";
 import { StatusReportService } from "./StatusReport.service";
+import { PrintPDF } from "../Print/PrintPDF";
 
 /**
  * The menu bar for status report page.
@@ -21,7 +22,8 @@ export class StatusReportCommandMenu {
     id: "itrp-pm-status-hub-header-download",
     important: true,
     text: "Download",
-    disabled: true
+    disabled: true,
+    onActivate: PrintPDF.eventHandlderPrint
   };
 
   /**
@@ -74,6 +76,18 @@ export class StatusReportCommandMenu {
     disabled: true
   };
 
+  /**
+   * Bulk Delete button.
+   */
+  private bulkDeleteButton: IHeaderCommandBarItem = {
+    iconProps: {
+      iconName: "Delete"
+    },
+    id: "itrp-pm-status-hub-header-bulk-delete",
+    text: "Bulk Delete",
+    disabled: true
+  };
+
   /** Used to trigger update. */
   buttons: ObservableValue<IHeaderCommandBarItem[]> = new ObservableValue([
     this.downloadButton,
@@ -81,7 +95,8 @@ export class StatusReportCommandMenu {
     this.saveButton,
     this.approveButton,
     { id: "separator", itemType: MenuItemType.Divider },
-    this.deleteButton
+    this.deleteButton,
+    this.bulkDeleteButton
   ]);
 
   /**
@@ -90,10 +105,20 @@ export class StatusReportCommandMenu {
    * @param currentPage the current page data
    */
   public updateButtonStatuses(currentPage: IStatusReportHubState): void {
+
+    /*
+     * Record can only be saved if not approved state. Presently, only
+     * the latest copy is not approved state.
+     */
     const saveableRecord =
       currentPage.record != undefined &&
       (currentPage.record.approved === undefined ||
         !currentPage.record.approved);
+
+    /*
+     * A record is considered persisted when a record id exists
+     * and not the fictitious "Latest".
+     */
     const storedRecord =
       currentPage.record != undefined &&
       currentPage.record.id != undefined &&
@@ -103,6 +128,8 @@ export class StatusReportCommandMenu {
     this.deleteButton.disabled = !storedRecord;
     this.shareButton.disabled = !storedRecord;
     this.downloadButton.disabled = !storedRecord;
+
+    // Notify the subscribers.
     this.buttons.notify(this.buttons.value, "updateButtonStatus");
   }
 
