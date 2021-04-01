@@ -108,6 +108,12 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
     this.commandButtons.attachOnDeleteActivate(() => {
       self.eventHandlerDeleteButton();
     });
+
+    // Delete event
+    this.commandButtons.attachOnRefreshActivate(() => {
+      self.showInProgress();
+      self.loadRecord();
+    });
   }
 
   /**

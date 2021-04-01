@@ -27,14 +27,14 @@ export class StatusReportCommandMenu {
   };
 
   /**
-   * Share button.
+   * Refresh button.
    */
-  private shareButton: IHeaderCommandBarItem = {
+  private refreshButton: IHeaderCommandBarItem = {
     iconProps: {
-      iconName: "Share"
+      iconName: "Refresh"
     },
-    id: "itrp-pm-status-hub-header-share",
-    text: "Share",
+    id: "itrp-pm-status-hub-header-refresh",
+    text: "Refresh",
     disabled: true
   };
 
@@ -91,12 +91,12 @@ export class StatusReportCommandMenu {
   /** Used to trigger update. */
   buttons: ObservableValue<IHeaderCommandBarItem[]> = new ObservableValue([
     this.downloadButton,
-    this.shareButton,
+    this.refreshButton,
     this.saveButton,
-    this.approveButton,
-    { id: "separator", itemType: MenuItemType.Divider },
+//    this.approveButton,
+//    { id: "separator", itemType: MenuItemType.Divider },
     this.deleteButton,
-    this.bulkDeleteButton
+//    this.bulkDeleteButton
   ]);
 
   /**
@@ -126,7 +126,7 @@ export class StatusReportCommandMenu {
 
     this.saveButton.disabled = !saveableRecord;
     this.deleteButton.disabled = !storedRecord;
-    this.shareButton.disabled = !storedRecord;
+    this.refreshButton.disabled = !saveableRecord;
     this.downloadButton.disabled = !storedRecord;
 
     // Notify the subscribers.
@@ -162,17 +162,17 @@ export class StatusReportCommandMenu {
   }
 
   /**
-   * Attach the event to a share button click.
+   * Attach the event to a refresh button click.
    *
    * @param event event to fire
    */
-  public attachOnShareActivate(
+  public attachOnRefreshActivate(
     event: (
       menuItem: IMenuItem,
       event?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>
     ) => boolean | void
   ): void {
-    this.shareButton.onActivate = event;
+    this.refreshButton.onActivate = event;
   }
 
   /**
@@ -203,6 +203,6 @@ export class StatusReportCommandMenu {
     this.attachOnDeleteActivate(event);
     this.attachOnDownloadActivate(event);
     this.attachOnSaveActivate(event);
-    this.attachOnShareActivate(event);
+    this.attachOnRefreshActivate(event);
   }
 }
