@@ -29,7 +29,7 @@ export class SearchService {
     query: QueryHierarchyItem | undefined
   ): Promise<string> {
     let url = await ProjectService.getBaseUrl();
-    if (query == undefined) {
+    if (query === undefined) {
       throw new Error("Query cannot be empty.");
     }
     url += "/_queries/query/" + query.id;
