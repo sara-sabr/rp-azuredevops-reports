@@ -9,6 +9,9 @@ This file lists all reference material that is of use during the development of 
 
 ## Microsoft documentation
 
+- [Overview of a Microsoft Extension](https://docs.microsoft.com/en-us/azure/devops/extend/overview?view=azure-devops)
+This provies an overview of developing custom extensions and service-hooks.
+
 - [Manifest Information](https://docs.microsoft.com/en-us/azure/devops/extend/develop/manifest?view=azure-devops)
 The manifest provides the extension integration points into Azure DevOps and the Marketplace.
 
@@ -21,6 +24,12 @@ The latest SDK to use for an extension as Azure DevOps Extension SDK is promoted
 - [UI Compontents](https://developer.microsoft.com/en-gb/azure-devops/components)
 The Formula Design System provides common UI widgets for Azure DevOps extensions as well as design recommendations.
 
+- [API Endpoints](https://docs.microsoft.com/en-us/previous-versions/azure/devops/integrate/previous-apis/overview)
+Public API that are available for Azure DevOps.
+
+- [Icon Names](https://uifabricicons.azurewebsites.net/)
+Icon names available when using the ***icons*** such as ```iconName``` attributes in various UI components.
+
 ## Sample code
 
 - [Azure DevOps Web Sample Extension](https://github.com/microsoft/azure-devops-extension-sample)
@@ -31,3 +40,6 @@ How to create a hot reloable plugin for different environments. This extension l
 
 - [Visual Studio Team Services (VSTS) Sample Extensions](https://github.com/microsoft/vsts-extension-samples)
 Repository of examples which are better used as an idea of how to approach problems then actual code references as this uses the VSS SDK.
+
+- [Azure DevOps Engineering Marketplace Extensions](https://github.com/microsoft/azure-devops-engineering-extensions)
+Another one, has an example of emailing and PR. However, this is more of a pipeline task sending emails, which doesn't meet our use case.

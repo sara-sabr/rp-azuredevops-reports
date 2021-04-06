@@ -305,23 +305,10 @@ export class StatusReportService {
         // Go down a level as impediment is there.
         if (node.children[0].data) {
           // We have an impediment mapped to a project.
-          relatedNode.data.addImpediment(node.children[0].data.title);
+          relatedNode.data.addImpediment(node.children[0].data);
         }
       }
     }
-  }
-
-  /**
-   * Get the latest status report entity definition.
-   *
-   * @returns the latest status report entity definition.
-   */
-  static getLatestStatusReport(): StatusReportEntity {
-    return {
-      id: undefined,
-      name: "Latest",
-      asOf: undefined
-    };
   }
 
   /**

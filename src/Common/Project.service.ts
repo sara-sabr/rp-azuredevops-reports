@@ -44,6 +44,11 @@ export class ProjectService {
   static BASE_URL: string;
 
   /**
+   * Work item prepend.
+   */
+  private static prependWitEditUrl = "/_workitems/edit/";
+
+  /**
    * Display a date without time.
    *
    * @param date date
@@ -61,6 +66,16 @@ export class ProjectService {
     } else {
       return formatDate(date, "yyyyMMdd");
     }
+  }
+
+  /**
+   * Generate the URL to edit a work item.
+   *
+   * @param id the id of the work item.
+   */
+  public static async generateWitEditUrl(id: string | number): Promise<string> {
+    const baseUrl = await this.getBaseUrl();
+    return baseUrl + this.prependWitEditUrl + id;
   }
 
   /**

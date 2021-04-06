@@ -4,6 +4,7 @@ import { WorkItem } from "azure-devops-extension-api/WorkItemTracking";
 // Project Level
 import { StatusReportConfig } from "./StatusReport.config";
 import { WorkItemBaseEntity } from "../Common/WorkItemBase.entity";
+import { ImpedimentsEntity } from "./Impediments.entity";
 
 /**
  * The status entry for the status report page.
@@ -32,7 +33,7 @@ export class StatusEntryEntity extends WorkItemBaseEntity {
   /**
    * The key issues.
    */
-  keyIssues: string[] = [];
+  keyIssues: ImpedimentsEntity[] = [];
 
   /**
    * The target date
@@ -51,9 +52,9 @@ export class StatusEntryEntity extends WorkItemBaseEntity {
   /**
    * Add the impediment to the list.
    *
-   * @param impedimentTitle the title of the impediment.
+   * @param impediment the impediment.
    */
-  public addImpediment(impedimentTitle: string) {
-    this.keyIssues.push(impedimentTitle);
+  public addImpediment(impediment: ImpedimentsEntity) {
+    this.keyIssues.push(impediment);
   }
 }

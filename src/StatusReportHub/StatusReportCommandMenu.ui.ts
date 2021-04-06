@@ -6,6 +6,7 @@ import { ObservableValue } from "azure-devops-ui/Core/Observable";
 // Project Level
 import { IStatusReportHubState } from "./IStatusReportHub.state";
 import { StatusReportService } from "./StatusReport.service";
+import { PrintPDF } from "../Print/PrintPDF";
 
 /**
  * The menu bar for status report page.
@@ -21,18 +22,21 @@ export class StatusReportCommandMenu {
     id: "itrp-pm-status-hub-header-download",
     important: true,
     text: "Download",
-    disabled: true
+    disabled: true,
+    onActivate: function() {
+      PrintPDF.eventHandlderPrint();
+    }
   };
 
   /**
-   * Share button.
+   * Refresh button.
    */
-  private shareButton: IHeaderCommandBarItem = {
+  private refreshButton: IHeaderCommandBarItem = {
     iconProps: {
-      iconName: "Share"
+      iconName: "Refresh"
     },
-    id: "itrp-pm-status-hub-header-share",
-    text: "Share",
+    id: "itrp-pm-status-hub-header-refresh",
+    text: "Refresh",
     disabled: true
   };
 
@@ -50,19 +54,6 @@ export class StatusReportCommandMenu {
   };
 
   /**
-   * The approve button.
-   */
-  private approveButton: IHeaderCommandBarItem = {
-    iconProps: {
-      iconName: "CheckMark"
-    },
-    id: "itrp-pm-status-hub-header-approve",
-    important: false,
-    text: "Approve item",
-    disabled: true
-  };
-
-  /**
    * Delete button.
    */
   private deleteButton: IHeaderCommandBarItem = {
@@ -77,10 +68,8 @@ export class StatusReportCommandMenu {
   /** Used to trigger update. */
   buttons: ObservableValue<IHeaderCommandBarItem[]> = new ObservableValue([
     this.downloadButton,
-    this.shareButton,
+    this.refreshButton,
     this.saveButton,
-    this.approveButton,
-    { id: "separator", itemType: MenuItemType.Divider },
     this.deleteButton
   ]);
 
@@ -90,10 +79,19 @@ export class StatusReportCommandMenu {
    * @param currentPage the current page data
    */
   public updateButtonStatuses(currentPage: IStatusReportHubState): void {
+    /*
+     * Record can only be saved if not approved state. Presently, only
+     * the latest copy is not approved state.
+     */
     const saveableRecord =
       currentPage.record != undefined &&
       (currentPage.record.approved === undefined ||
         !currentPage.record.approved);
+
+    /*
+     * A record is considered persisted when a record id exists
+     * and not the fictitious "Latest".
+     */
     const storedRecord =
       currentPage.record != undefined &&
       currentPage.record.id != undefined &&
@@ -101,8 +99,10 @@ export class StatusReportCommandMenu {
 
     this.saveButton.disabled = !saveableRecord;
     this.deleteButton.disabled = !storedRecord;
-    this.shareButton.disabled = !storedRecord;
-    this.downloadButton.disabled = !storedRecord;
+    this.refreshButton.disabled = !saveableRecord;
+    this.downloadButton.disabled = false;
+
+    // Notify the subscribers.
     this.buttons.notify(this.buttons.value, "updateButtonStatus");
   }
 
@@ -135,17 +135,17 @@ export class StatusReportCommandMenu {
   }
 
   /**
-   * Attach the event to a share button click.
+   * Attach the event to a refresh button click.
    *
    * @param event event to fire
    */
-  public attachOnShareActivate(
+  public attachOnRefreshActivate(
     event: (
       menuItem: IMenuItem,
       event?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>
     ) => boolean | void
   ): void {
-    this.shareButton.onActivate = event;
+    this.refreshButton.onActivate = event;
   }
 
   /**
@@ -176,6 +176,6 @@ export class StatusReportCommandMenu {
     this.attachOnDeleteActivate(event);
     this.attachOnDownloadActivate(event);
     this.attachOnSaveActivate(event);
-    this.attachOnShareActivate(event);
+    this.attachOnRefreshActivate(event);
   }
 }
