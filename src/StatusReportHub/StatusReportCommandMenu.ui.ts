@@ -23,7 +23,9 @@ export class StatusReportCommandMenu {
     important: true,
     text: "Download",
     disabled: true,
-    onActivate: PrintPDF.eventHandlderPrint
+    onActivate: function() {
+      PrintPDF.eventHandlderPrint();
+    }
   };
 
   /**
@@ -52,19 +54,6 @@ export class StatusReportCommandMenu {
   };
 
   /**
-   * The approve button.
-   */
-  private approveButton: IHeaderCommandBarItem = {
-    iconProps: {
-      iconName: "CheckMark"
-    },
-    id: "itrp-pm-status-hub-header-approve",
-    important: false,
-    text: "Approve item",
-    disabled: true
-  };
-
-  /**
    * Delete button.
    */
   private deleteButton: IHeaderCommandBarItem = {
@@ -76,27 +65,12 @@ export class StatusReportCommandMenu {
     disabled: true
   };
 
-  /**
-   * Bulk Delete button.
-   */
-  private bulkDeleteButton: IHeaderCommandBarItem = {
-    iconProps: {
-      iconName: "Delete"
-    },
-    id: "itrp-pm-status-hub-header-bulk-delete",
-    text: "Bulk Delete",
-    disabled: true
-  };
-
   /** Used to trigger update. */
   buttons: ObservableValue<IHeaderCommandBarItem[]> = new ObservableValue([
     this.downloadButton,
     this.refreshButton,
     this.saveButton,
-//    this.approveButton,
-//    { id: "separator", itemType: MenuItemType.Divider },
-    this.deleteButton,
-//    this.bulkDeleteButton
+    this.deleteButton
   ]);
 
   /**
@@ -105,7 +79,6 @@ export class StatusReportCommandMenu {
    * @param currentPage the current page data
    */
   public updateButtonStatuses(currentPage: IStatusReportHubState): void {
-
     /*
      * Record can only be saved if not approved state. Presently, only
      * the latest copy is not approved state.
@@ -127,7 +100,7 @@ export class StatusReportCommandMenu {
     this.saveButton.disabled = !saveableRecord;
     this.deleteButton.disabled = !storedRecord;
     this.refreshButton.disabled = !saveableRecord;
-    this.downloadButton.disabled = !storedRecord;
+    this.downloadButton.disabled = false;
 
     // Notify the subscribers.
     this.buttons.notify(this.buttons.value, "updateButtonStatus");

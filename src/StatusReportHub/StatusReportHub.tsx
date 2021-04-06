@@ -20,10 +20,7 @@ import { IListBoxItem, ListBoxItemType } from "azure-devops-ui/ListBox";
 import { Observer } from "azure-devops-ui/Observer";
 import { Page } from "azure-devops-ui/Page";
 import { Pill } from "azure-devops-ui/Pill";
-import {
-  Spinner,
-  SpinnerSize
-} from "azure-devops-ui/Spinner";
+import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import {
   IStatusProps,
   Status,
@@ -79,7 +76,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   /**
    * Work item URL prefix
    */
-  private witItemUrlPrefix:string = "";
+  private witItemUrlPrefix: string = "";
 
   constructor(props: {}) {
     super(props);
@@ -181,7 +178,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
     }
   }
 
-  private async getEditUrl():Promise<void> {
+  private async getEditUrl(): Promise<void> {
     this.witItemUrlPrefix = await ProjectService.generateWitEditUrl("");
   }
 
@@ -317,7 +314,10 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
               excludeFocusZone={true}
               excludeTabStop={true}
             >
-              <Link href={this.witItemUrlPrefix + rowData.id} target="_blank">#{rowData.id}</Link>: {rowData.title}
+              <Link href={this.witItemUrlPrefix + rowData.id} target="_blank">
+                #{rowData.id}
+              </Link>
+              : {rowData.title}
             </Pill>
             <p>
               <b>Objective</b>
@@ -332,10 +332,18 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
             </p>
             {rowData.keyIssues.length > 0 && (
               <ul>
-                {rowData.keyIssues.map((value) => {
-                  return <li key={value.id}>
-                    <Link href={this.witItemUrlPrefix + value.id} target="_blank">#{value.id}</Link>: {value.title}
-                  </li>;
+                {rowData.keyIssues.map(value => {
+                  return (
+                    <li key={value.id}>
+                      <Link
+                        href={this.witItemUrlPrefix + value.id}
+                        target="_blank"
+                      >
+                        #{value.id}
+                      </Link>
+                      : {value.title}
+                    </li>
+                  );
                 })}
               </ul>
             )}
@@ -356,7 +364,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
         <tr className="status-report-grouped-header-row">
           <th colSpan={3}>{groupTitle}</th>
         </tr>
-        {this.state.statusReport?.get(groupTitle)?.map((value) => {
+        {this.state.statusReport?.get(groupTitle)?.map(value => {
           return this.writeStatusRow(value);
         })}
       </tbody>

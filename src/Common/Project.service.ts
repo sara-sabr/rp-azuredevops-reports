@@ -46,7 +46,7 @@ export class ProjectService {
   /**
    * Work item prepend.
    */
-  private static prependWitEditUrl = "/_workitems/edit/"
+  private static prependWitEditUrl = "/_workitems/edit/";
 
   /**
    * Display a date without time.
@@ -73,7 +73,7 @@ export class ProjectService {
    *
    * @param id the id of the work item.
    */
-  public static async generateWitEditUrl(id:string|number):Promise<string> {
+  public static async generateWitEditUrl(id: string | number): Promise<string> {
     const baseUrl = await this.getBaseUrl();
     return baseUrl + this.prependWitEditUrl + id;
   }

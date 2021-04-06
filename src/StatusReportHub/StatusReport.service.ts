@@ -306,7 +306,6 @@ export class StatusReportService {
         if (node.children[0].data) {
           // We have an impediment mapped to a project.
           relatedNode.data.addImpediment(node.children[0].data);
-          console.log(node.children[0].data);
         }
       }
     }
