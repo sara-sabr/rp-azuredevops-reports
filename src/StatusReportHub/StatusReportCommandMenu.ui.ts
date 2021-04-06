@@ -100,7 +100,7 @@ export class StatusReportCommandMenu {
     this.saveButton.disabled = !saveableRecord;
     this.deleteButton.disabled = !storedRecord;
     this.refreshButton.disabled = !saveableRecord;
-    this.downloadButton.disabled = false;
+    this.downloadButton.disabled = true;
 
     // Notify the subscribers.
     this.buttons.notify(this.buttons.value, "updateButtonStatus");
