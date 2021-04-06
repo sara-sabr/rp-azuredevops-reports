@@ -1,9 +1,12 @@
-# Azure DevOps Extension - Boards - Work Item Automation
+# Azure DevOps Extension - Boards - Quality of Life Automation
 
-This extension enables the capability to update dependencies of work items.
+[![Development](https://github.com/sara-sabr/AzBoards-QoL-Automation/actions/workflows/development.yml/badge.svg)](https://github.com/sara-sabr/AzBoards-QoL-Automation/actions/workflows/development.yml)
+[![Production](https://github.com/sara-sabr/AzBoards-QoL-Automation/actions/workflows/production.yml/badge.svg)](https://github.com/sara-sabr/AzBoards-QoL-Automation/actions/workflows/production.yml)
+
+This extension enables the capability to automate some stuff for us.
 
 Features:
-- When a child changes state, see if we need to update the parent state.
+- Produce a status report.
 
 ## Prerequisites
 
