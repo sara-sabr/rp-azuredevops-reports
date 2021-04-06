@@ -155,9 +155,11 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
       this.showInProgress();
 
       await StatusReportService.deleteRecord(this.state.record);
-      await this.refreshSavedReports();
-
+      // Load the record first, otherwise the selection is out of sync as the
+      // index selected is higher then what could be available.
+      // Ex: When you delete the last remaining status report.
       await this.loadLatestRecord();
+      await this.refreshSavedReports();
     }
   }
 
