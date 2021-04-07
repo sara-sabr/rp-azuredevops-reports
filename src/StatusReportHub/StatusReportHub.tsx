@@ -121,9 +121,17 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
    * https://reactjs.org/docs/state-and-lifecycle.html
    */
   public componentDidMount() {
-    SDK.init();
-    this.refreshSavedReports();
-    this.loadLatestRecord();
+    this.performMountAsync();
+  }
+
+  /**
+   * Mount activiites that are async.
+   */
+  private async performMountAsync():Promise<void> {
+    await SDK.init();
+    this.statusPageHub.userDisplayName = ProjectService.getCurrentUserDisplayName();
+    await this.refreshSavedReports();
+    await this.loadLatestRecord();
   }
 
   /**
@@ -452,7 +460,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
 
   public render(): JSX.Element {
     return (
-      <Page className="flex-grow">
+      <Page className="flex-grow" key="statusPage">
         <CustomHeader className="bolt-header-with-commandbar">
           <HeaderTitleArea>
             <HeaderTitleRow>
@@ -481,7 +489,13 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
           </Observer>
         </CustomHeader>
         <div className="page-content-left page-content-right page-content-top">
-          <table className="status-report-tables">
+          {/** Page header only for printing */}
+          <div className="flex-row padding-vertical-4 only-on-print title-m">
+            <div className="flex-column" style={{width: "48%"}}>Report: {this.state.record?.name}</div>
+            <div className="flex-column" style={{width: "48%", textAlign: "right"}}>User: {this.state.userDisplayName}</div>
+          </div>
+          {/** Status Report Table */}
+          <table className="status-report-tables" id="statusReport">
             <thead>
               <tr className="status-report-header-row">
                 <th className="status-report-col-status">Risk</th>
@@ -492,7 +506,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
               </tr>
             </thead>
             {/** Print this on no data. */
-            this.state.statusReport == undefined && (
+            this.state.statusReport === undefined && (
               <tbody>
                 <tr>
                   <td colSpan={3}>

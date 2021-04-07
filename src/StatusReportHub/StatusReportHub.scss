@@ -77,3 +77,20 @@ div.activityTitle {
     font-weight: bold;
 }
 
+div.only-on-print {
+    display: none;
+}
+
+@media print {
+    div.bolt-header-with-commandbar {
+        display: none;
+    }
+
+    div#root > div.v-scroll-auto {
+        overflow-y: visible;
+    }
+
+    div.only-on-print {
+        display: flex;
+    }
+}

@@ -31,4 +31,9 @@ export interface IStatusReportHubState {
    * The record being displayed.
    */
   record?: StatusReportEntity;
+
+  /**
+   * The current user's display name.
+   */
+  userDisplayName?: string;
 }

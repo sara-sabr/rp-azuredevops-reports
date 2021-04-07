@@ -61,7 +61,7 @@ export class TreeNode<T, Y> {
    * @returns true when top level node.
    */
   public isTopLevelNode(): boolean {
-    return this.parent !== undefined && this.parent.parent == undefined;
+    return this.parent !== undefined && this.parent.parent === undefined;
   }
 
   /**
