@@ -1,6 +1,6 @@
 // Library Level
 import { IHeaderCommandBarItem } from "azure-devops-ui/HeaderCommandBar";
-import { IMenuItem, MenuItemType } from "azure-devops-ui/Menu";
+import { IMenuItem } from "azure-devops-ui/Menu";
 import { ObservableValue } from "azure-devops-ui/Core/Observable";
 
 // Project Level
@@ -15,16 +15,16 @@ export class StatusReportCommandMenu {
   /**
    * The download button
    */
-  private downloadButton: IHeaderCommandBarItem = {
+  private printButton: IHeaderCommandBarItem = {
     iconProps: {
-      iconName: "Download"
+      iconName: "Print"
     },
-    id: "itrp-pm-status-hub-header-download",
+    id: "itrp-pm-status-hub-header-print",
     important: true,
-    text: "Download",
+    text: "Print",
     disabled: true,
     onActivate: function() {
-      PrintPDF.eventHandlderPrint();
+      PrintPDF.eventHandlderPrint('statusReport');
     }
   };
 
@@ -67,7 +67,7 @@ export class StatusReportCommandMenu {
 
   /** Used to trigger update. */
   buttons: ObservableValue<IHeaderCommandBarItem[]> = new ObservableValue([
-    this.downloadButton,
+    this.printButton,
     this.refreshButton,
     this.saveButton,
     this.deleteButton
@@ -100,7 +100,7 @@ export class StatusReportCommandMenu {
     this.saveButton.disabled = !saveableRecord;
     this.deleteButton.disabled = !storedRecord;
     this.refreshButton.disabled = !saveableRecord;
-    this.downloadButton.disabled = true;
+    this.printButton.disabled = false;
 
     // Notify the subscribers.
     this.buttons.notify(this.buttons.value, "updateButtonStatus");
@@ -149,17 +149,17 @@ export class StatusReportCommandMenu {
   }
 
   /**
-   * Attach the event to a download button click.
+   * Attach the event to a print button click.
    *
    * @param event event to fire
    */
-  public attachOnDownloadActivate(
+  public attachOnPrintActivate(
     event: (
       menuItem: IMenuItem,
       event?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>
     ) => boolean | void
   ): void {
-    this.downloadButton.onActivate = event;
+    this.printButton.onActivate = event;
   }
 
   /**
@@ -174,7 +174,7 @@ export class StatusReportCommandMenu {
     ) => boolean | void
   ): void {
     this.attachOnDeleteActivate(event);
-    this.attachOnDownloadActivate(event);
+    this.attachOnPrintActivate(event);
     this.attachOnSaveActivate(event);
     this.attachOnRefreshActivate(event);
   }
