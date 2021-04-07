@@ -185,4 +185,13 @@ export class ProjectService {
     const projectService = await this.getProjectService();
     return projectService.getProject();
   }
+
+  /**
+   * Get the current user's display name as saved in Azure DevOps.
+   *
+   * @returns the current user's display name.
+   */
+  static getCurrentUserDisplayName():string {
+    return SDK.getUser().displayName
+  }
 }
