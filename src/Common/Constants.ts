@@ -151,7 +151,7 @@ export class Constants {
   /**
    * Risk level medium.
    */
-  static readonly WIT_RISK_MED = "2 - Meidum";
+  static readonly WIT_RISK_MED = "2 - Medium";
 
   /**
    * Risk level high.
