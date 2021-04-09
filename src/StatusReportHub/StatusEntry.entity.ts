@@ -36,9 +36,9 @@ export class StatusEntryEntity extends WorkItemBaseEntity {
   keyIssues: ImpedimentsEntity[] = [];
 
   /**
-   * The target date
+   * The due date
    */
-  targetDate?: Date;
+  dueDate?: Date;
 
   public populateFromWorkItem(workItem: WorkItem): void {
     super.populateFromWorkItem(workItem);
@@ -46,7 +46,7 @@ export class StatusEntryEntity extends WorkItemBaseEntity {
     this.riskLevel = workItem.fields[StatusReportConfig.getFieldRisk()];
     this.action = workItem.fields[StatusReportConfig.getFieldAction()];
     this.objective = workItem.fields[StatusReportConfig.getFieldObjective()];
-    this.targetDate = workItem.fields[StatusReportConfig.getFieldTargetDate()];
+    this.dueDate = workItem.fields[StatusReportConfig.getFieldDueDate()];
   }
 
   /**

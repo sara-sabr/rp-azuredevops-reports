@@ -312,9 +312,9 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
         {
           /** Epic - Date  */
           <td>
-            {rowData.targetDate && (
+            {rowData.dueDate && (
               <span>
-                {ProjectService.formatDateWithNoTime(rowData.targetDate)}
+                {ProjectService.formatDateWithNoTime(rowData.dueDate)}
               </span>
             )}
           </td>
