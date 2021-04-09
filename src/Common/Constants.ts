@@ -127,6 +127,12 @@ export class Constants {
     "Microsoft.VSTS.Scheduling.TargetDate";
 
   /**
+   * The system name for the due date.
+   */
+  static readonly WIT_FIELD_DUE_DATE =
+    "Microsoft.VSTS.Scheduling.DueDate";
+
+  /**
    * The system name for the finish date.
    */
   static readonly WIT_FIELD_FINISH_DATE =

@@ -19,7 +19,6 @@ import { Link } from "azure-devops-ui/Link";
 import { IListBoxItem, ListBoxItemType } from "azure-devops-ui/ListBox";
 import { Observer } from "azure-devops-ui/Observer";
 import { Page } from "azure-devops-ui/Page";
-import { Pill } from "azure-devops-ui/Pill";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import {
   IStatusProps,
@@ -184,6 +183,8 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   ): void {
     if (item.data) {
       this.showInProgress();
+      // Force as of to be undefined.
+      StatusReportService.LATEST_RECORD.asOf = undefined;
       this.statusPageHub.record = item.data as StatusReportEntity;
       this.loadRecord();
     }
@@ -219,6 +220,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
 
     const asOf = this.statusPageHub.record.asOf;
     const projectStatusData = await StatusReportService.getProjectStatus(asOf);
+    this.statusPageHub.record.asOf = projectStatusData.asOf;
     this.populateRecordInfo(projectStatusData, this.statusPageHub.record);
     this.selectReport(this.statusPageHub.record.id);
     await this.commandButtons.updateButtonStatuses(this.state);
@@ -228,7 +230,9 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
    * Load the latest record into the page.
    */
   private async loadLatestRecord(): Promise<void> {
-    this.statusPageHub.record = Object.create(StatusReportService.LATEST_RECORD);
+    this.statusPageHub.record = StatusReportService.LATEST_RECORD;
+    // Ensure latest remains with no date everytime we do a load.
+    this.statusPageHub.record.asOf = undefined;
     await this.loadRecord();
   }
 
@@ -308,9 +312,9 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
         {
           /** Epic - Date  */
           <td>
-            {rowData.targetDate && (
+            {rowData.dueDate && (
               <span>
-                {ProjectService.formatDateWithNoTime(rowData.targetDate)}
+                {ProjectService.formatDateWithNoTime(rowData.dueDate)}
               </span>
             )}
           </td>
@@ -318,16 +322,14 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
         {
           /** Epic - Description  */
           <td>
-            <Pill
+            <div
               className="margin-top-4 activityTitle margin-bottom-4"
-              excludeFocusZone={true}
-              excludeTabStop={true}
             >
               <Link href={this.witItemUrlPrefix + rowData.id} target="_blank">
                 #{rowData.id}
               </Link>
               : {rowData.title}
-            </Pill>
+            </div>
             <p>
               <b>Objective</b>
             </p>

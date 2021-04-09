@@ -61,12 +61,12 @@ export class StatusReportConfig {
   }
 
   /**
-   * Get the target field as specified by the configuration.
+   * Get the due date field as specified by the configuration.
    *
-   * @returns the field name for objetive.
+   * @returns the due date.
    */
-  public static getFieldTargetDate(): string {
-    return Constants.WIT_FIELD_TARGET_DATE;
+  public static getFieldDueDate(): string {
+    return Constants.WIT_FIELD_DUE_DATE;
   }
 
   /**
