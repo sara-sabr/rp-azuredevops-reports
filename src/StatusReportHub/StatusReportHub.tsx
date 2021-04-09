@@ -183,6 +183,8 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   ): void {
     if (item.data) {
       this.showInProgress();
+      // Force as of to be undefined.
+      StatusReportService.LATEST_RECORD.asOf = undefined;
       this.statusPageHub.record = item.data as StatusReportEntity;
       this.loadRecord();
     }
@@ -218,6 +220,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
 
     const asOf = this.statusPageHub.record.asOf;
     const projectStatusData = await StatusReportService.getProjectStatus(asOf);
+    this.statusPageHub.record.asOf = projectStatusData.asOf;
     this.populateRecordInfo(projectStatusData, this.statusPageHub.record);
     this.selectReport(this.statusPageHub.record.id);
     await this.commandButtons.updateButtonStatuses(this.state);
@@ -227,7 +230,9 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
    * Load the latest record into the page.
    */
   private async loadLatestRecord(): Promise<void> {
-    this.statusPageHub.record = Object.create(StatusReportService.LATEST_RECORD);
+    this.statusPageHub.record = StatusReportService.LATEST_RECORD;
+    // Ensure latest remains with no date everytime we do a load.
+    this.statusPageHub.record.asOf = undefined;
     await this.loadRecord();
   }
 
