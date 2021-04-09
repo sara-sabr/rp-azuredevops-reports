@@ -50,11 +50,6 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   private statusReportSelection = new DropdownSelection();
 
   /**
-   * Row Number of entries
-   */
-  private rowNumber: number = 1;
-
-  /**
    * Menu Buttons.
    */
   private commandButtons: StatusReportCommandMenu;
@@ -77,6 +72,11 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
    * Work item URL prefix
    */
   private witItemUrlPrefix: string = "";
+
+  /**
+   * The project name.
+   */
+  private projectName: string = "";
 
   constructor(props: {}) {
     super(props);
@@ -107,10 +107,10 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
       self.eventHandlerDeleteButton();
     });
 
-    // Delete event
+    // Refresh event
     this.commandButtons.attachOnRefreshActivate(() => {
       self.showInProgress();
-      self.loadRecord();
+      self.loadLatestRecord();
     });
   }
 
@@ -130,6 +130,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   private async performMountAsync():Promise<void> {
     await SDK.init();
     this.statusPageHub.userDisplayName = ProjectService.getCurrentUserDisplayName();
+    this.projectName = await ProjectService.getProjectName();
     await this.refreshSavedReports();
     await this.loadLatestRecord();
   }
@@ -218,7 +219,6 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
 
     const asOf = this.statusPageHub.record.asOf;
     const projectStatusData = await StatusReportService.getProjectStatus(asOf);
-    this.statusPageHub.record.asOf = projectStatusData.asOf;
     this.populateRecordInfo(projectStatusData, this.statusPageHub.record);
     this.selectReport(this.statusPageHub.record.id);
     await this.commandButtons.updateButtonStatuses(this.state);
@@ -228,7 +228,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
    * Load the latest record into the page.
    */
   private async loadLatestRecord(): Promise<void> {
-    this.statusPageHub.record = StatusReportService.LATEST_RECORD;
+    this.statusPageHub.record = Object.create(StatusReportService.LATEST_RECORD);
     await this.loadRecord();
   }
 
@@ -271,7 +271,6 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
     this.refreshState();
 
     this.commandButtons.updateButtonStatuses(this.state);
-    this.rowNumber = 1;
   }
 
   /**
@@ -490,6 +489,9 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
         </CustomHeader>
         <div className="page-content-left page-content-right page-content-top">
           {/** Page header only for printing */}
+          <div className="flex-row padding-vertical-4 only-on-print title-m">
+            <div className="flex-column" style={{width: "90%"}}>{this.projectName}</div>
+          </div>
           <div className="flex-row padding-vertical-4 only-on-print title-m">
             <div className="flex-column" style={{width: "48%"}}>Report: {this.state.record?.name}</div>
             <div className="flex-column" style={{width: "48%", textAlign: "right"}}>User: {this.state.userDisplayName}</div>
