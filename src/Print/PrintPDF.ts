@@ -10,7 +10,7 @@ export class PrintPDF {
    *
    * @param domId the DOM ID to print
    */
-  public static async eventHandlderPrint(domId: string): Promise<void> {
+  public static eventHandlderPrint(domId: string): void {
     // As this in Azure DevOps is called within an IFRAME, only the IFRAME
     // content will be printed.
     //
