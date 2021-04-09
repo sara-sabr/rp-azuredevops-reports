@@ -75,6 +75,8 @@ table.status-report-tables {
 
 div.activityTitle {
     font-weight: bold;
+    border-bottom: 1px dotted black;
+    padding:0;
 }
 
 div.only-on-print {
@@ -82,15 +84,28 @@ div.only-on-print {
 }
 
 @media print {
+    /** Show the top header */
     div.bolt-header-with-commandbar {
         display: none;
     }
 
+    div.only-on-print {
+        display: flex;
+    }
+
+    /** force scroll bar to print all pages */
     div#root > div.v-scroll-auto {
         overflow-y: visible;
     }
 
-    div.only-on-print {
-        display: flex;
+    /** force font to be black as dark mode by default has white font and white background while printing. */
+    body {
+        color: black !important;
+    }
+
+    /** Force pill color */
+    .bolt-pill.standard {
+        background-color: rgba(0, 0, 0, 0.06) !important;
+        background-color: var(--palette-black-alpha-6,rgba(0, 0, 0, 0.06)) !important;
     }
 }

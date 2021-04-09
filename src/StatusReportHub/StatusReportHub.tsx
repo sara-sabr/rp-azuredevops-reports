@@ -19,7 +19,6 @@ import { Link } from "azure-devops-ui/Link";
 import { IListBoxItem, ListBoxItemType } from "azure-devops-ui/ListBox";
 import { Observer } from "azure-devops-ui/Observer";
 import { Page } from "azure-devops-ui/Page";
-import { Pill } from "azure-devops-ui/Pill";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import {
   IStatusProps,
@@ -318,16 +317,14 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
         {
           /** Epic - Description  */
           <td>
-            <Pill
+            <div
               className="margin-top-4 activityTitle margin-bottom-4"
-              excludeFocusZone={true}
-              excludeTabStop={true}
             >
               <Link href={this.witItemUrlPrefix + rowData.id} target="_blank">
                 #{rowData.id}
               </Link>
               : {rowData.title}
-            </Pill>
+            </div>
             <p>
               <b>Objective</b>
             </p>
