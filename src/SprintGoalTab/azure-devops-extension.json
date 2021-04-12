@@ -10,9 +10,8 @@
       "properties": {
           "name": "Goal",
           "title": "Goal",
-          "uri": "SprintGoalTab.html",
-          "dynamic": true
-      }
+          "uri": "SprintGoalTab.html"
+        }
     }
   ]
 }
