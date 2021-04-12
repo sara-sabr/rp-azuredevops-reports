@@ -10,7 +10,7 @@
       "properties": {
           "name": "Goal",
           "title": "Goal",
-          "uri": "SprintGoalTab.html"
+          "uri": "dist/SprintGoalTab/SprintGoalTab.html"
         }
     }
   ]
