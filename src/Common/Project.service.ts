@@ -192,6 +192,15 @@ export class ProjectService {
    * @returns the current user's display name.
    */
   static getCurrentUserDisplayName():string {
-    return SDK.getUser().displayName
+    return SDK.getUser().displayName;
+  }
+
+  /**
+   * Get the current team ID.
+   *
+   * @returns the current team id.
+   */
+  static getCurrentTeamId():string {
+    return SDK.getConfiguration().team.name;
   }
 }

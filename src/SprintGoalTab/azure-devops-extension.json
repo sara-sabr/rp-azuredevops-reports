@@ -10,7 +10,8 @@
       "properties": {
           "name": "Goal",
           "title": "Goal",
-          "uri": "dist/SprintGoalTab/SprintGoalTab.html"
+          "uri": "dist/SprintGoalTab/SprintGoalTab.html",
+          "registeredObjectId": "backlogTabObject"
         }
     }
   ]
