@@ -25,14 +25,14 @@ export class SprintGoalEntity extends WorkItemBaseEntity {
   areaPath: string = "";
 
   /**
-   * The iteration ID.
+   * The iteration path.
    */
-  iterationId: string = "";
+  iterationPath: string = "";
 
   public populateFromWorkItem(workItem: WorkItem): void {
     super.populateFromWorkItem(workItem);
     this.areaPath = workItem.fields[Constants.WIT_FIELD_AREA_PATH];
-    this.iterationId = workItem.fields[Constants.WIT_FIELD_ITERATION_ID];
+    this.iterationPath = workItem.fields[Constants.WIT_FIELD_ITERATION_PATH];
     this.description = workItem.fields[Constants.WIT_FIELD_DESCRIPTION];
     this.status = workItem.fields[Constants.WIT_FIELD_STATE];
   }

@@ -15,11 +15,12 @@ import { Constants } from "../Common/Constants";
 import { ProjectService } from "../Common/Project.service";
 import { SearchResultEntity } from "./SearchResult.entity";
 import { WorkItemBaseEntity } from "../Common/WorkItemBase.entity";
+import { CommonRepositories } from "../Common/Common.repository";
 
 /**
- * Search service.
+ * Search repository.
  */
-export class SearchService {
+export class SearchRepository {
   /**
    * Get the query url.
    *
@@ -43,7 +44,7 @@ export class SearchService {
    */
   static async getQuery(name: string): Promise<QueryHierarchyItem> {
     const projectName = await ProjectService.getProjectName();
-    return ProjectService.WIT_API_CLIENT.getQuery(
+    return CommonRepositories.WIT_API_CLIENT.getQuery(
       projectName,
       name,
       QueryExpand.Wiql
@@ -51,41 +52,25 @@ export class SearchService {
   }
 
   /**
-   * Execute the specified query.
+   * Helper to execute a wiql query and give the result.
    *
-   * @param name the query name found inside the configuration folder.
-   * @param type the class definition of results expected
-   * @param asOf query history if specified
+   * @param wiql the query to run
+   * @param nodeMap the node map
+   * @param rootNode the root not
+   * @param type the type of object to create
+   * @returns the results
    */
-  static async executeQuery<T extends WorkItemBaseEntity>(
-    name: string,
-    type: { new (): T },
-    asOf?: Date
+  private static async executeQueryHelperWiql<T extends WorkItemBaseEntity>(
+    wiql: string,
+    nodeMap: Map<number, SearchResultEntity<T, number>>,
+    rootNode: SearchResultEntity<T, number>,
+    type: { new (): T }
   ): Promise<SearchResultEntity<T, number>> {
-    const query = await this.getQuery(name);
-
-    if (query.isFolder) {
-      throw new Error(
-        "The specified query is a folder and not an actual query."
-      );
-    }
-
-    const rootNode = new SearchResultEntity<T, number>(undefined);
-    const nodeMap = new Map<number, SearchResultEntity<T, number>>();
-
-    // Init the root node's data.
-    rootNode.populateNodeMap(nodeMap);
-    rootNode.sourceQuery = query;
 
     const projectName = await ProjectService.getProjectName();
-    let wiql = query.wiql;
-
-    if (asOf) {
-      wiql += " ASOF '" + asOf.toISOString() + "'";
-    }
 
     // Get results.
-    const results = await ProjectService.WIT_API_CLIENT.queryByWiql(
+    const results = await CommonRepositories.WIT_API_CLIENT.queryByWiql(
       { query: wiql },
       projectName
     );
@@ -111,7 +96,7 @@ export class SearchService {
 
       // Now populate the data as we want to bulk request the data.
       let ids = Array.from(nodeMap.keys());
-      const workItemDataResults = await ProjectService.WIT_API_CLIENT.getWorkItemsBatch(
+      const workItemDataResults = await CommonRepositories.WIT_API_CLIENT.getWorkItemsBatch(
         {
           ids: ids,
           fields: fieldNames,
@@ -130,6 +115,62 @@ export class SearchService {
     }
 
     return rootNode;
+  }
+
+  /**
+   * Execute the specified WIQL query.
+   *
+   * @param wiql the WIQL query.
+   * @param type the class definition of results expected
+   * @returns the results
+   */
+  static async executeQueryWiql<T extends WorkItemBaseEntity>(
+    wiql: string,
+    type: { new (): T }
+  ): Promise<SearchResultEntity<T, number>> {
+    const rootNode = new SearchResultEntity<T, number>(undefined);
+    const nodeMap = new Map<number, SearchResultEntity<T, number>>();
+
+    // Init the root node's data.
+    rootNode.populateNodeMap(nodeMap);
+
+    return this.executeQueryHelperWiql(wiql, nodeMap, rootNode, type);
+  }
+
+  /**
+   * Execute the specified query.
+   *
+   * @param name the query name found inside the configuration folder.
+   * @param type the class definition of results expected
+   * @param asOf query history if specified
+   * @returns the results
+   */
+  static async executeQuery<T extends WorkItemBaseEntity>(
+    name: string,
+    type: { new (): T },
+    asOf?: Date
+  ): Promise<SearchResultEntity<T, number>> {
+    const query = await this.getQuery(name);
+
+    if (query.isFolder) {
+      throw new Error(
+        "The specified query is a folder and not an actual query."
+      );
+    }
+
+    const rootNode = new SearchResultEntity<T, number>(undefined);
+    const nodeMap = new Map<number, SearchResultEntity<T, number>>();
+
+    // Init the root node's data.
+    rootNode.populateNodeMap(nodeMap);
+    rootNode.sourceQuery = query;
+    let wiql = query.wiql;
+
+    if (asOf) {
+      wiql += " ASOF '" + asOf.toISOString() + "'";
+    }
+
+    return this.executeQueryHelperWiql(wiql, nodeMap, rootNode, type);
   }
 
   /**
