@@ -24,7 +24,7 @@ export class StatusReportCommandMenu {
     text: "Print",
     disabled: true,
     onActivate: function() {
-      PrintPDF.eventHandlderPrint('statusReport');
+      PrintPDF.eventHandlderPrint("statusReport");
     }
   };
 

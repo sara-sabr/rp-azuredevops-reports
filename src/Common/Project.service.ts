@@ -184,7 +184,7 @@ export class ProjectService {
    *
    * @returns the current user's display name.
    */
-  static getCurrentUserDisplayName():string {
+  static getCurrentUserDisplayName(): string {
     return SDK.getUser().displayName;
   }
 }

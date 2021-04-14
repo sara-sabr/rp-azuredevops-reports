@@ -9,7 +9,7 @@ import { Constants } from "../Common/Constants";
  * Sprint goal entity which is a wrapper to a work item.
  */
 export class SprintGoalEntity extends WorkItemBaseEntity {
- /**
+  /**
    * The current status.
    */
   status: string = "";

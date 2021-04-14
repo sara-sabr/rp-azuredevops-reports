@@ -4,7 +4,6 @@
  * For example, the navigation bar and left mmenu as those are also in another IFRAME.
  */
 export class PrintPDF {
-
   /**
    * Print the specified DOM ID.
    *

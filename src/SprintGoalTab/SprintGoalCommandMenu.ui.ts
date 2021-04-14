@@ -58,7 +58,6 @@ export class SprintGoalCommandMenu {
    * @param currentPage the current page data
    */
   public updateButtonStatuses(currentPage: ISprintGoalState): void {
-
     // Notify the subscribers.
     this.buttons.notify(this.buttons.value, "updateButtonStatus");
   }

@@ -66,7 +66,6 @@ export class SearchRepository {
     rootNode: SearchResultEntity<T, number>,
     type: { new (): T }
   ): Promise<SearchResultEntity<T, number>> {
-
     const projectName = await ProjectService.getProjectName();
 
     // Get results.

@@ -1,6 +1,4 @@
 /**
  * Sprint goal service.
  */
-export class SprintGoalConfiguration {
-
-}
+export class SprintGoalConfiguration {}
