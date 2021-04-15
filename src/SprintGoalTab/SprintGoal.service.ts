@@ -49,6 +49,7 @@ export class SprintGoalService {
    */
   public static async save(entity: SprintGoalEntity):Promise<SprintGoalEntity> {
     try {
+      entity.hasError = false;
       if (entity.id === undefined || entity.id === 0) {
         const project = await ProjectService.getProject();
         if (project === undefined) {
@@ -61,6 +62,7 @@ export class SprintGoalService {
         return await SprintGoalRepository.updateGoal(entity);
       }
     } catch (e) {
+      entity.hasError = true;
       return entity;
     }
   }

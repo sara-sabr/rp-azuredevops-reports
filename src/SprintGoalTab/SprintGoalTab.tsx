@@ -15,21 +15,22 @@ import {
   TitleSize
 } from "azure-devops-ui/Header";
 import { Dropdown } from "azure-devops-ui/Dropdown";
+import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
 import { IListBoxItem } from "azure-devops-ui/ListBox";
+import { Link } from "azure-devops-ui/Link";
+import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
 import { Observer } from "azure-devops-ui/Observer";
+import { ObservableValue } from "azure-devops-ui/Core/Observable";
 import { Page } from "azure-devops-ui/Page";
+import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
+import { TextField, TextFieldWidth } from "azure-devops-ui/TextField";
 
 // Project Level
 import { ISprintGoalState } from "./ISprintGoal.state";
 import { SprintGoalCommandMenu } from "./SprintGoalCommandMenu.ui";
 import { SprintGoalService } from "./SprintGoal.service";
-import { TextField, TextFieldWidth } from "azure-devops-ui/TextField";
 import { SprintGoalEntity } from "./SprintGoal.entity";
-import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
-import { ObservableValue } from "azure-devops-ui/Core/Observable";
-import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import { ProjectService } from "../Common/Project.service";
-import { Link } from "azure-devops-ui/Link";
 
 /**
  * The status report page.
@@ -188,7 +189,6 @@ class SprintGoalTab extends React.Component<{}, ISprintGoalState> {
     if (goal === undefined) {
       return;
     }
-
     await this.selectGoalStatus(goal);
     this.goalTitle.value = goal.title;
     this.setState({goal: goal,
@@ -230,6 +230,16 @@ class SprintGoalTab extends React.Component<{}, ISprintGoalState> {
               label="Please wait ..."
             />
           </div>
+        )}
+        {this.state.goal.hasError === true && (
+        <div>
+            <MessageCard
+              className="flex-self-stretch"
+              severity={MessageCardSeverity.Error}
+            >
+              Error saving goal, please make sure you've filled in all fields.
+          </MessageCard>
+         </div>
         )}
        {/** In progress. */
           !this.state.loading && (
