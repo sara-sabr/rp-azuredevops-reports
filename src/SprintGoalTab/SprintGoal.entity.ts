@@ -9,13 +9,13 @@ import { Constants } from "../Common/Constants";
  * Sprint goal entity which is a wrapper to a work item.
  */
 export class SprintGoalEntity extends WorkItemBaseEntity {
- /**
+  /**
    * The current status.
    */
   status: string = "";
 
   /**
-   * Sprint goal description
+   * Sprint goal description.
    */
   description: string = "";
 
@@ -25,14 +25,19 @@ export class SprintGoalEntity extends WorkItemBaseEntity {
   areaPath: string = "";
 
   /**
-   * The iteration ID.
+   * The iteration path.
    */
-  iterationId: string = "";
+  iterationPath: string = "";
+
+  /**
+   * True when the field has an error.
+   */
+  hasError: boolean = false;
 
   public populateFromWorkItem(workItem: WorkItem): void {
     super.populateFromWorkItem(workItem);
     this.areaPath = workItem.fields[Constants.WIT_FIELD_AREA_PATH];
-    this.iterationId = workItem.fields[Constants.WIT_FIELD_ITERATION_ID];
+    this.iterationPath = workItem.fields[Constants.WIT_FIELD_ITERATION_PATH];
     this.description = workItem.fields[Constants.WIT_FIELD_DESCRIPTION];
     this.status = workItem.fields[Constants.WIT_FIELD_STATE];
   }

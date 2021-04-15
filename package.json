@@ -23,8 +23,10 @@
     "azure-devops-extension-sdk": "^2.0.11",
     "azure-devops-ui": "^1.160.4",
     "date-fns": "^2.19.0",
+    "office-ui-fabric-react": "^7.166.2",
     "react": "^16.14.0",
-    "react-dom": "^16.14.0"
+    "react-dom": "^16.14.0",
+    "roosterjs": "^8.1.0"
   },
   "devDependencies": {
     "@types/react": "^16.14.4",

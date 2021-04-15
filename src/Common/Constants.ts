@@ -35,6 +35,11 @@ export class Constants {
   static readonly WIT_TYPE_PBI = "Product Backlog Item";
 
   /**
+   * Label for Goals.
+   */
+  static readonly WIT_TYPE_GOAL = "Goal";
+
+  /**
    * Label for Feature.
    */
   static readonly WIT_TYPE_FEATURE = "Feature";
@@ -55,9 +60,19 @@ export class Constants {
   static readonly WIT_FIELD_ID = "System.Id";
 
   /**
+   * The system name for the project field.
+   */
+  static readonly WIT_FIELD_PROJECT = "System.TeamProject";
+
+  /**
    * The system name for the iteration identifier field.
    */
   static readonly WIT_FIELD_ITERATION_ID = "System.IterationId";
+
+  /**
+   * The system name for the iteration path field.
+   */
+  static readonly WIT_FIELD_ITERATION_PATH = "System.IterationPath";
 
   /**
    * The system name for the state field.
@@ -129,8 +144,7 @@ export class Constants {
   /**
    * The system name for the due date.
    */
-  static readonly WIT_FIELD_DUE_DATE =
-    "Microsoft.VSTS.Scheduling.DueDate";
+  static readonly WIT_FIELD_DUE_DATE = "Microsoft.VSTS.Scheduling.DueDate";
 
   /**
    * The system name for the finish date.

@@ -9,7 +9,7 @@ import { StatusReportEntity } from "./StatusReport.entity";
 import { StatusEntryEntity } from "./StatusEntry.entity";
 import { ProjectService } from "../Common/Project.service";
 import { SearchResultEntity } from "../Search/SearchResult.entity";
-import { SearchService } from "../Search/Search.service";
+import { SearchRepository } from "../Search/Search.repository";
 import { StatusReportRepository } from "./StatusReport.repository";
 
 /**
@@ -278,7 +278,7 @@ export class StatusReportService {
     const impedimentsResults: SearchResultEntity<
       ImpedimentsEntity,
       number
-    > = await SearchService.executeQuery(
+    > = await SearchRepository.executeQuery(
       StatusReportConfig.getQueryImpediments(),
       ImpedimentsEntity
     );
@@ -322,7 +322,7 @@ export class StatusReportService {
     const projectStatus: SearchResultEntity<
       StatusEntryEntity,
       number
-    > = await SearchService.executeQuery(
+    > = await SearchRepository.executeQuery(
       StatusReportConfig.getQueryForLatestStatus(),
       StatusEntryEntity,
       asOf

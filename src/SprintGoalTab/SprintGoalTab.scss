@@ -11,3 +11,22 @@
     width: 100%;
     object-fit: scale-down;
 }
+
+#goalDescription {
+    border: 1px solid black;
+    min-height: 150px;
+    padding: 5px;
+}
+
+#goalDescription li {
+    list-style-type: disc;
+}
+
+#goalDescription ul,
+#goalDescription ol {
+    padding-left: 40px;
+}
+
+#goalSection .form-group {
+    padding-bottom: 16px;
+}
