@@ -126,7 +126,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   /**
    * Mount activiites that are async.
    */
-  private async performMountAsync():Promise<void> {
+  private async performMountAsync(): Promise<void> {
     await SDK.init();
     this.statusPageHub.userDisplayName = ProjectService.getCurrentUserDisplayName();
     this.projectName = await ProjectService.getProjectName();
@@ -322,9 +322,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
         {
           /** Epic - Description  */
           <td>
-            <div
-              className="margin-top-4 activityTitle margin-bottom-4"
-            >
+            <div className="margin-top-4 activityTitle margin-bottom-4">
               <Link href={this.witItemUrlPrefix + rowData.id} target="_blank">
                 #{rowData.id}
               </Link>
@@ -492,11 +490,20 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
         <div className="page-content-left page-content-right page-content-top">
           {/** Page header only for printing */}
           <div className="flex-row padding-vertical-4 only-on-print title-m">
-            <div className="flex-column" style={{width: "90%"}}>{this.projectName}</div>
+            <div className="flex-column" style={{ width: "90%" }}>
+              {this.projectName}
+            </div>
           </div>
           <div className="flex-row padding-vertical-4 only-on-print title-m">
-            <div className="flex-column" style={{width: "48%"}}>Report: {this.state.record?.name}</div>
-            <div className="flex-column" style={{width: "48%", textAlign: "right"}}>User: {this.state.userDisplayName}</div>
+            <div className="flex-column" style={{ width: "48%" }}>
+              Report: {this.state.record?.name}
+            </div>
+            <div
+              className="flex-column"
+              style={{ width: "48%", textAlign: "right" }}
+            >
+              User: {this.state.userDisplayName}
+            </div>
           </div>
           {/** Status Report Table */}
           <table className="status-report-tables" id="statusReport">

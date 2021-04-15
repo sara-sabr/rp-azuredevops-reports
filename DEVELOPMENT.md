@@ -30,6 +30,12 @@ Public API that are available for Azure DevOps.
 - [Icon Names](https://uifabricicons.azurewebsites.net/)
 Icon names available when using the ***icons*** such as ```iconName``` attributes in various UI components.
 
+- [Process Migrator](https://github.com/microsoft/process-migrator)
+Microsoft node program to import/export processes from Azure DevOps. If cannot update a proceess
+
+- [Azure Boards Default Fieldss](https://docs.microsoft.com/en-us/azure/devops/boards/work-items/guidance/work-item-field?view=azure-devops)
+List of all fields available, you can use view source in query to also get the field names by hovering over the dropdowns.
+
 ## Sample code
 
 - [Azure DevOps Web Sample Extension](https://github.com/microsoft/azure-devops-extension-sample)

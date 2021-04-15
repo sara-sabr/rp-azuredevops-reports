@@ -2,32 +2,12 @@
 import { IHeaderCommandBarItem } from "azure-devops-ui/HeaderCommandBar";
 import { IMenuItem } from "azure-devops-ui/Menu";
 import { ObservableValue } from "azure-devops-ui/Core/Observable";
-
-// Project Level
-import { IStatusReportHubState } from "./IStatusReportHub.state";
-import { StatusReportService } from "./StatusReport.service";
-import { PrintPDF } from "../Print/PrintPDF";
+import { ISprintGoalState } from "./ISprintGoal.state";
 
 /**
- * The menu bar for status report page.
+ * The menu bar for sprint goal page.
  */
-export class StatusReportCommandMenu {
-  /**
-   * The download button
-   */
-  private printButton: IHeaderCommandBarItem = {
-    iconProps: {
-      iconName: "Print"
-    },
-    id: "itrp-pm-status-hub-header-print",
-    important: true,
-    text: "Print",
-    disabled: true,
-    onActivate: function() {
-      PrintPDF.eventHandlderPrint("statusReport");
-    }
-  };
-
+export class SprintGoalCommandMenu {
   /**
    * Refresh button.
    */
@@ -67,10 +47,7 @@ export class StatusReportCommandMenu {
 
   /** Used to trigger update. */
   buttons: ObservableValue<IHeaderCommandBarItem[]> = new ObservableValue([
-    this.printButton,
-    this.refreshButton,
     this.saveButton,
-    this.deleteButton
   ]);
 
   /**
@@ -78,30 +55,7 @@ export class StatusReportCommandMenu {
    *
    * @param currentPage the current page data
    */
-  public updateButtonStatuses(currentPage: IStatusReportHubState): void {
-    /*
-     * Record can only be saved if not approved state. Presently, only
-     * the latest copy is not approved state.
-     */
-    const saveableRecord =
-      currentPage.record != undefined &&
-      (currentPage.record.approved === undefined ||
-        !currentPage.record.approved);
-
-    /*
-     * A record is considered persisted when a record id exists
-     * and not the fictitious "Latest".
-     */
-    const storedRecord =
-      currentPage.record != undefined &&
-      currentPage.record.id != undefined &&
-      currentPage.record.id != StatusReportService.LATEST_RECORD.id;
-
-    this.saveButton.disabled = !saveableRecord;
-    this.deleteButton.disabled = !storedRecord;
-    this.refreshButton.disabled = !saveableRecord;
-    this.printButton.disabled = false;
-
+  public updateButtonStatuses(currentPage: ISprintGoalState): void {
     // Notify the subscribers.
     this.buttons.notify(this.buttons.value, "updateButtonStatus");
   }
@@ -149,20 +103,6 @@ export class StatusReportCommandMenu {
   }
 
   /**
-   * Attach the event to a print button click.
-   *
-   * @param event event to fire
-   */
-  public attachOnPrintActivate(
-    event: (
-      menuItem: IMenuItem,
-      event?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>
-    ) => boolean | void
-  ): void {
-    this.printButton.onActivate = event;
-  }
-
-  /**
    * Bulk attach the event to all buttons.
    *
    * @param event the event to fire
@@ -174,7 +114,6 @@ export class StatusReportCommandMenu {
     ) => boolean | void
   ): void {
     this.attachOnDeleteActivate(event);
-    this.attachOnPrintActivate(event);
     this.attachOnSaveActivate(event);
     this.attachOnRefreshActivate(event);
   }

@@ -1,0 +1,18 @@
+{
+  "contributions": [
+    {
+      "id": "esdc.it-rp.sprint-goals-tab",
+      "type": "ms.vss-web.tab",
+      "description": "Adds Sprint Goals tab to Sprint view.",
+      "targets": [
+          "ms.vss-work-web.iteration-backlog-tabs"
+      ],
+      "properties": {
+          "name": "Goal",
+          "title": "Goal",
+          "uri": "dist/SprintGoalTab/SprintGoalTab.html",
+          "registeredObjectId": "backlogTabObject"
+        }
+    }
+  ]
+}

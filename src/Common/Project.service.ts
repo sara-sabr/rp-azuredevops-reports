@@ -6,10 +6,8 @@ import {
   IExtensionDataService,
   ILocationService,
   IProjectInfo,
-  IProjectPageService,
-  getClient
+  IProjectPageService
 } from "azure-devops-extension-api";
-import { WorkItemTrackingRestClient } from "azure-devops-extension-api/WorkItemTracking";
 
 // Function Import
 import { format as formatDate } from "date-fns";
@@ -18,11 +16,6 @@ import { format as formatDate } from "date-fns";
  * Project utilities.
  */
 export class ProjectService {
-  /**
-   * Singleton for work item client.
-   */
-  static readonly WIT_API_CLIENT = getClient(WorkItemTrackingRestClient);
-
   /**
    * The singleton local service.
    */
@@ -191,7 +184,7 @@ export class ProjectService {
    *
    * @returns the current user's display name.
    */
-  static getCurrentUserDisplayName():string {
-    return SDK.getUser().displayName
+  static getCurrentUserDisplayName(): string {
+    return SDK.getUser().displayName;
   }
 }
