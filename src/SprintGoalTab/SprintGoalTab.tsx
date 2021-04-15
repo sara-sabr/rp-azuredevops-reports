@@ -27,6 +27,7 @@ import { TextField, TextFieldWidth } from "azure-devops-ui/TextField";
 import { SprintGoalEntity } from "./SprintGoal.entity";
 import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
 import { ObservableValue } from "azure-devops-ui/Core/Observable";
+import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 
 /**
  * The status report page.
@@ -52,9 +53,22 @@ class SprintGoalTab extends React.Component<{}, ISprintGoalState> {
    */
   private goalStatesList = new ObservableValue<IListBoxItem[]>([]);
 
+  /**
+   * The current iteration.
+   */
+  private currentIterationId:string = "";
+
+  /**
+   * The title of the goal.
+   *
+   * Note:
+   * Needed for the text field edits as TextField requires Oberservable wrapped fields.
+   */
+  private goalTitle = new ObservableValue<string>("");
+
   constructor(props: {}) {
     super(props);
-    this.state = { goal: new SprintGoalEntity() };
+    this.state = { loading: true, goal: new SprintGoalEntity() };
     this.commandButtons = new SprintGoalCommandMenu();
   }
 
@@ -67,26 +81,25 @@ class SprintGoalTab extends React.Component<{}, ISprintGoalState> {
   public componentDidMount() {
     this.performMountAsync();
     this.registerEventHandlers();
-
-    // Create the editor.
-    const divElement = document.getElementById(
-      "goalDescription"
-    ) as HTMLDivElement;
-    this.goalEditor = RoosterJs.createEditor(divElement);
   }
 
   /**
    * Register all event handlers.
    */
   private registerEventHandlers(): void {
+    let _self = this;
+
     // Event handler mapping for backlog tied to json definition.
     // This is also needed to handle the exceptions if no event defined.
     SDK.register("backlogTabObject", {
       pageTitle: function() {
         // Do nothing.
       },
-      updateContext: function() {
-        // Do nothing.
+      updateContext: function(state: any) {
+        if (state.iterationId !== _self.currentIterationId) {
+          _self.currentIterationId = state.iterationId;
+          _self.loadIterationGoal();
+        }
       },
       isInvisible: function() {
         // Do nothing.
@@ -97,6 +110,31 @@ class SprintGoalTab extends React.Component<{}, ISprintGoalState> {
         return false;
       }
     });
+
+    this.commandButtons.attachOnSaveActivate(() => {
+      _self.saveGoal();
+    });
+  }
+
+  /**
+   * Save the goal
+   */
+  private async saveGoal():Promise<void> {
+    let goal = this.state.goal;
+    this.startTask();
+
+    goal.title = this.goalTitle.value;
+
+    if (this.goalEditor && goal) {
+      goal.description = this.goalEditor.getContent()
+    }
+
+    if (goal) {
+      goal.status = this.goalStatesList.value[this.goalStateSelection.value[0].beginIndex].id;
+      goal = await SprintGoalService.save(goal);
+      await this.updateState(goal);
+    }
+    this.finishTask();
   }
 
   /**
@@ -104,47 +142,99 @@ class SprintGoalTab extends React.Component<{}, ISprintGoalState> {
    */
   private async performMountAsync(): Promise<void> {
     await SDK.init();
-    const goalState = await SprintGoalService.getCurrentGoal();
-    await this.updateState(goalState);
+    this.currentIterationId = await SprintGoalService.getInitialIterationId();
+    await this.loadIterationGoal();
+  }
+
+  /**
+   * Load the iterationg goal.
+   */
+  private async loadIterationGoal():Promise<void> {
+    this.startTask();
+    const goal = await SprintGoalService.getIterationGoal(this.currentIterationId);
+    await this.updateState(goal);
+    this.finishTask();
+  }
+
+  /**
+   * Trigger sprint goal to be undefined to force a reload.
+   */
+  private startTask():void {
+    this.setState({loading: true});
+  }
+
+  /**
+   * Trigger sprint goal to be undefined to force a reload.
+   */
+  private finishTask():void {
+    this.setState({loading: false});
+
+    // Need to recreat the editor as DOM destruction happens on the page.
+    const divElement = document.getElementById(
+      "goalDescription"
+    ) as HTMLDivElement;
+    this.goalEditor = RoosterJs.createEditor(divElement);
+    this.goalEditor.setContent(this.state.goal.description);
   }
 
   /**
    * Update the page based on new data.
    *
-   * @param goalState the goal state
+   * @param goal the goal
    */
-  private async updateState(goalState: ISprintGoalState): Promise<void> {
-    if (this.goalEditor === undefined || goalState.goal === undefined) {
+  private async updateState(goal: SprintGoalEntity): Promise<void> {
+    if (goal === undefined) {
       return;
     }
 
-    this.goalEditor.setContent(goalState.goal.description);
+    await this.selectGoalStatus(goal);
+    this.goalTitle.value = goal.title;
+    this.setState({goal: goal})
+  }
 
+  /**
+   * Select the target goal's state.
+   *
+   * @param goal the goal state
+   */
+  private async selectGoalStatus(goal: SprintGoalEntity):Promise<void> {
     // Select the current state.
-    this.goalStatesList.value = await SprintGoalService.getAvailableGoalStates(goalState.goal);
+    this.goalStatesList.value = await SprintGoalService.getAvailableGoalStates(goal);
     const allWitStates = this.goalStatesList.value;
+    let found = false;
     for (let idx = 0; idx < allWitStates.length; idx++) {
-      if (allWitStates[idx].id === goalState.goal.status) {
+      if (allWitStates[idx].id === goal.status) {
         this.goalStateSelection.select(idx);
+        found = true;
         break;
       }
     }
 
-    this.setState(goalState);
+    if (!found) {
+      this.goalStateSelection.select(0);
+    }
   }
 
   public render(): JSX.Element {
     return (
       <Page className="flex-grow" key="SprintGoalTab">
+       {/** In progress. */
+          this.state.loading && (
+          <div className="flex-row v-align-middle justify-center full-size">
+            <Spinner
+              size={SpinnerSize.large}
+              label="Please wait ..."
+            />
+          </div>
+        )}
+       {/** In progress. */
+          !this.state.loading && (
+          <React.Fragment>
         <CustomHeader className="bolt-header-with-commandbar">
           <HeaderTitleArea>
             <HeaderTitleRow>
               <HeaderTitle titleSize={TitleSize.Large} className="flex-grow">
-                <TextField
-                  value={this.state.goal.title}
-                  placeholder="Provide a title for the new Sprint Goal"
-                  width={TextFieldWidth.auto}
-                />
+                Sprint Goal
               </HeaderTitle>
             </HeaderTitleRow>
           </HeaderTitleArea>
@@ -153,6 +243,20 @@ class SprintGoalTab extends React.Component<{}, ISprintGoalState> {
           </Observer>
         </CustomHeader>
         <div className="page-content page-content-top" id="goalSection">
+          <div className="form-group">
+            <label htmlFor="goalTitle">Title</label>
+            <TextField
+              inputId="goalTitle"
+                    value={this.goalTitle}
+                    maxLength={255}
+                    required={true}
+                    onChange={(e, newValue) => {
+                      this.goalTitle.value = newValue;
+                    }}
+                    placeholder="Provide a title for the new Sprint Goal"
+                    width={TextFieldWidth.auto}
+                  />
+          </div>
           <div className="form-group">
             <div className="workitemlabel label-control">
               <label htmlFor="goalCommitted">State</label>
@@ -174,6 +278,8 @@ class SprintGoalTab extends React.Component<{}, ISprintGoalState> {
             </small>
           </div>
         </div>
+        </React.Fragment>
+        )}
       </Page>
     );
   }

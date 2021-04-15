@@ -3,7 +3,6 @@ import * as SDK from "azure-devops-extension-sdk";
 import { ProjectService } from "../Common/Project.service";
 import { SprintGoalRepository } from "./SprintGoal.repository";
 import { TeamContext } from "azure-devops-extension-api/Core/Core";
-import { ISprintGoalState } from "./ISprintGoal.state";
 import { SprintGoalEntity } from "./SprintGoal.entity";
 import { IListBoxItem } from "azure-devops-ui/ListBox";
 import { WorkItemStateResultModel } from "azure-devops-extension-api/WorkItemTrackingProcess";
@@ -14,14 +13,16 @@ import { WorkItemStateResultModel } from "azure-devops-extension-api/WorkItemTra
 export class SprintGoalService {
 
   /**
-   * Get the current goal for the current displayed iteration and team.
+   * Get the goal for the specified iteration and team.
    *
+   * @param iterationId the iteration ID to load
    * @returns the sprint goal state.
    */
-  public static async getCurrentGoal(): Promise<ISprintGoalState> {
+  public static async getIterationGoal(iterationId: string): Promise<SprintGoalEntity> {
+    const teamContext = await this.getTeamContext();
     const sprintGoal = new SprintGoalEntity();
     sprintGoal.areaPath = await this.getCurrentTeamDefaultAreaPath();
-    sprintGoal.iterationPath = await this.getIterationPath();
+    sprintGoal.iterationPath = await SprintGoalRepository.getIterationPath(teamContext, iterationId);
 
     const sprintGoalResults = await SprintGoalRepository.findSprintGoal(
       sprintGoal
@@ -31,13 +32,36 @@ export class SprintGoalService {
     // underlying data.
     if (sprintGoalResults.isEmpty()) {
       // No sprint goal, so create a new entity.
-      return {} as ISprintGoalState;
+      return new SprintGoalEntity();
     } else {
       const entry = sprintGoalResults.children[0].data;
       if (entry) {
-        return { goal: entry };
+        return entry;
       }
       throw new Error("Results don't have data bound. Bug?");
+    }
+  }
+
+  /**
+   * Save the entity.
+   *
+   * @param entity the entity
+   */
+  public static async save(entity: SprintGoalEntity):Promise<SprintGoalEntity> {
+    try {
+      if (entity.id === undefined || entity.id === 0) {
+        const project = await ProjectService.getProject();
+        if (project === undefined) {
+          throw new Error ("Project not found.")
+        }
+        entity.areaPath = await this.getCurrentTeamDefaultAreaPath();
+        entity.iterationPath = await this.getIterationPath();
+        return await SprintGoalRepository.createGoal(entity, project.id);
+      } else {
+        return await SprintGoalRepository.updateGoal(entity);
+      }
+    } catch (e) {
+      return entity;
     }
   }
 
@@ -129,7 +153,7 @@ export class SprintGoalService {
    */
   public static async getIterationPath(): Promise<string> {
     const teamContext = await this.getTeamContext();
-    const iterationId = this.getIterationId();
+    const iterationId = this.getInitialIterationId();
     const iteration = await SprintGoalRepository.getIterationPath(
       teamContext,
       iterationId
@@ -152,7 +176,7 @@ export class SprintGoalService {
    *
    * @returns the current page iteration ID.
    */
-  public static getIterationId(): string {
+  public static getInitialIterationId(): string {
     // This is only available inside backlog.
     return SDK.getConfiguration().iterationId;
   }

@@ -47,9 +47,7 @@ export class SprintGoalCommandMenu {
 
   /** Used to trigger update. */
   buttons: ObservableValue<IHeaderCommandBarItem[]> = new ObservableValue([
-    this.refreshButton,
     this.saveButton,
-    this.deleteButton
   ]);
 
   /**

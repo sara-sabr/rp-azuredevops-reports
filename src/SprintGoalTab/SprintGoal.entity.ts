@@ -15,7 +15,7 @@ export class SprintGoalEntity extends WorkItemBaseEntity {
   status: string = "";
 
   /**
-   * Sprint goal description
+   * Sprint goal description.
    */
   description: string = "";
 
@@ -28,6 +28,11 @@ export class SprintGoalEntity extends WorkItemBaseEntity {
    * The iteration path.
    */
   iterationPath: string = "";
+
+  /**
+   * True when the field has an error.
+   */
+  hasError: boolean = false;
 
   public populateFromWorkItem(workItem: WorkItem): void {
     super.populateFromWorkItem(workItem);

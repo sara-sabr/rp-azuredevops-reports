@@ -7,6 +7,7 @@ import { SearchRepository } from "../Search/Search.repository";
 import { Constants } from "../Common/Constants";
 import { SearchResultEntity } from "../Search/SearchResult.entity";
 import { WorkItemStateResultModel } from "azure-devops-extension-api/WorkItemTrackingProcess";
+import { JsonPatchDocument, JsonPatchOperation, Operation } from "azure-devops-extension-api/WebApi";
 
 /**
  * Sprint goal repository.
@@ -120,6 +121,78 @@ export class SprintGoalRepository {
       iterationid
     );
     return iterationDetails.path;
+  }
+
+  /**
+   * Create a given entity.
+   *
+   * @param sprintGoal the entity to create
+   * @param projectId the project ID
+   * @return updated sprint goal with ID set.
+   */
+  public static async createGoal(sprintGoal: SprintGoalEntity, projectId:string):Promise<SprintGoalEntity> {
+    const witClient = CommonRepositories.WIT_API_CLIENT;
+    const jsonDoc:JsonPatchDocument = [
+      {
+        op: Operation.Add,
+        path: "/fields/" + Constants.WIT_FIELD_TITLE,
+        value: sprintGoal.title
+      } as JsonPatchOperation,
+      {
+        op: Operation.Add,
+        path: "/fields/" + Constants.WIT_FIELD_STATE,
+        value: sprintGoal.status
+      } as JsonPatchOperation,
+      {
+        op: Operation.Add,
+        path: "/fields/" + Constants.WIT_FIELD_DESCRIPTION,
+        value: sprintGoal.description
+      } as JsonPatchOperation,
+      {
+        op: Operation.Add,
+        path: "/fields/" + Constants.WIT_FIELD_AREA_PATH,
+        value: sprintGoal.areaPath
+      } as JsonPatchOperation,
+      {
+        op: Operation.Add,
+        path: "/fields/" + Constants.WIT_FIELD_ITERATION_PATH,
+        value: sprintGoal.iterationPath
+      } as JsonPatchOperation
+    ];
+
+    const workItem = await witClient.createWorkItem(jsonDoc, projectId, Constants.WIT_TYPE_GOAL);
+    sprintGoal.id = workItem.id;
+    return sprintGoal;
+  }
+
+  /**
+   * Update a given entity.
+   *
+   * @param sprintGoal the entity to create
+   * @return updated sprint goal.
+   */
+  public static async updateGoal(sprintGoal: SprintGoalEntity):Promise<SprintGoalEntity> {
+    const witClient = CommonRepositories.WIT_API_CLIENT;
+    const jsonDoc:JsonPatchDocument = [
+      {
+        op: Operation.Replace,
+        path: "/fields/" + Constants.WIT_FIELD_TITLE,
+        value: sprintGoal.title
+      } as JsonPatchOperation,
+      {
+        op: Operation.Replace,
+        path: "/fields/" + Constants.WIT_FIELD_STATE,
+        value: sprintGoal.status
+      } as JsonPatchOperation,
+      {
+        op: Operation.Replace,
+        path: "/fields/" + Constants.WIT_FIELD_DESCRIPTION,
+        value: sprintGoal.description
+      } as JsonPatchOperation
+    ];
+
+    await witClient.updateWorkItem(jsonDoc, sprintGoal.id);
+    return sprintGoal;
   }
 
   /**
