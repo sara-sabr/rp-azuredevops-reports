@@ -28,6 +28,8 @@ import { SprintGoalEntity } from "./SprintGoal.entity";
 import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
 import { ObservableValue } from "azure-devops-ui/Core/Observable";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
+import { ProjectService } from "../Common/Project.service";
+import { Link } from "azure-devops-ui/Link";
 
 /**
  * The status report page.
@@ -68,7 +70,7 @@ class SprintGoalTab extends React.Component<{}, ISprintGoalState> {
 
   constructor(props: {}) {
     super(props);
-    this.state = { loading: true, goal: new SprintGoalEntity() };
+    this.state = { loading: true, goal: new SprintGoalEntity(), goalUrl: "" };
     this.commandButtons = new SprintGoalCommandMenu();
   }
 
@@ -189,7 +191,9 @@ class SprintGoalTab extends React.Component<{}, ISprintGoalState> {
 
     await this.selectGoalStatus(goal);
     this.goalTitle.value = goal.title;
-    this.setState({goal: goal})
+    this.setState({goal: goal,
+      goalUrl: await ProjectService.generateWitEditUrl(goal.id)
+    })
   }
 
   /**
@@ -273,9 +277,17 @@ class SprintGoalTab extends React.Component<{}, ISprintGoalState> {
           <div className="form-group">
             <label htmlFor="goalDescription">Details</label>
             <div id="goalDescription"></div>
-            <small>
-              Edit the work item directly for full rich editor experience.
-            </small>
+            {/** New. */
+              this.state.goal.id === 0 && (
+                <small>Save the goal before full text edit is available.</small>
+            )}
+            {/** New. */
+              this.state.goal.id !== 0 && (
+                <small>
+                  <Link href={this.state.goalUrl} target="_blank">Edit the work item</Link> for full rich editor experience.
+                </small>
+            )}
+
           </div>
         </div>
         </React.Fragment>

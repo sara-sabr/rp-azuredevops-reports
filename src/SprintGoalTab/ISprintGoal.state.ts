@@ -13,4 +13,7 @@ export interface ISprintGoalState {
    * Page state is still loading.
    */
   loading: boolean;
+
+  /** The goal url */
+  goalUrl:string;
 }
