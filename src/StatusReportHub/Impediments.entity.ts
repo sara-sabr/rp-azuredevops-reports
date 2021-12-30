@@ -1,5 +1,5 @@
 // Project Level
-import { WorkItemBaseEntity } from "../Common/WorkItemBase.entity";
+import { WorkItemBaseEntity } from "@esdc-it-rp/azuredevops-common";
 
 /**
  * Impediment type.

@@ -6,7 +6,7 @@
       "targets": [".esdc.it.rp-reporting-hub-group"],
       "properties": {
         "name": "Status Report",
-        "uri": "dist/StatusReportHub/StatusReportHub.html",
+        "uri": "StatusReportHub/StatusReportHub.html",
         "order": 100,
         "icon": {
           "dark": "img/StatusReportHub.png",

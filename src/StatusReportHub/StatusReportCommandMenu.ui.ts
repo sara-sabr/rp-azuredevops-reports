@@ -17,15 +17,15 @@ export class StatusReportCommandMenu {
    */
   private printButton: IHeaderCommandBarItem = {
     iconProps: {
-      iconName: "Print"
+      iconName: "Print",
     },
     id: "itrp-pm-status-hub-header-print",
     important: true,
     text: "Print",
     disabled: true,
-    onActivate: function() {
+    onActivate: function () {
       PrintPDF.eventHandlderPrint("statusReport");
-    }
+    },
   };
 
   /**
@@ -33,11 +33,11 @@ export class StatusReportCommandMenu {
    */
   private refreshButton: IHeaderCommandBarItem = {
     iconProps: {
-      iconName: "Refresh"
+      iconName: "Refresh",
     },
     id: "itrp-pm-status-hub-header-refresh",
     text: "Refresh",
-    disabled: true
+    disabled: true,
   };
 
   /**
@@ -45,12 +45,12 @@ export class StatusReportCommandMenu {
    */
   private saveButton: IHeaderCommandBarItem = {
     iconProps: {
-      iconName: "Save"
+      iconName: "Save",
     },
     id: "itrp-pm-status-hub-header-save",
     important: true,
     isPrimary: true,
-    text: "Save"
+    text: "Save",
   };
 
   /**
@@ -58,11 +58,11 @@ export class StatusReportCommandMenu {
    */
   private deleteButton: IHeaderCommandBarItem = {
     iconProps: {
-      iconName: "Delete"
+      iconName: "Delete",
     },
     id: "itrp-pm-status-hub-header-delete",
     text: "Delete",
-    disabled: true
+    disabled: true,
   };
 
   /** Used to trigger update. */
@@ -70,7 +70,7 @@ export class StatusReportCommandMenu {
     this.printButton,
     this.refreshButton,
     this.saveButton,
-    this.deleteButton
+    this.deleteButton,
   ]);
 
   /**

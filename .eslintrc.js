@@ -3,13 +3,8 @@ module.exports = {
   plugins: ["@typescript-eslint", "prettier"],
   extends: ["plugin:prettier/recommended"],
   rules: {
-    "prettier/prettier": "error",
-    "eslint.validate": [
-      "javascript",
-      "javascriptreact",
-      "typescript",
-      "typescriptreact"
-    ]  },
+    "prettier/prettier": "error"
+  },
   parserOptions: {
     ecmaVersion: 6,
     sourceType: "module",

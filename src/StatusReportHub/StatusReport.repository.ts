@@ -1,7 +1,6 @@
 // Project level
-import { ProjectService } from "../Common/Project.service";
+import { ProjectService, to } from "@esdc-it-rp/azuredevops-common";
 import { StatusReportEntity } from "./StatusReport.entity";
-import to from "../Common/PromiseWrap";
 
 /**
  * All data save/load happens in the repository.
@@ -22,7 +21,7 @@ export class StatusReportRepository {
     try {
       const [error, result] = (await to(
         dataService.getDocuments(this.COLLECTION_ID, {
-          defaultValue: []
+          defaultValue: [],
         })
       )) as [Error, StatusReportEntity[] | undefined];
 

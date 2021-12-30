@@ -1,6 +1,5 @@
 // Project Level
-import { Constants } from "../Common/Constants";
-import { SearchRepository } from "../Search/Search.repository";
+import { Constants, SearchRepository } from "@esdc-it-rp/azuredevops-common";
 
 /**
  * Looad the configurations required to display the status report page.
