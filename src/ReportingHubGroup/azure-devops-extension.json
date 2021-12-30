@@ -8,8 +8,8 @@
       "properties": {
         "name": "Reporting",
         "icon": {
-          "dark": "img/ReportingGroup.png",
-          "light": "img/ReportingGroup.png"
+          "dark": "dist/static/img/ReportingGroup.png",
+          "light": "dist/static/img/ReportingGroup.png"
         }
       }
     }
