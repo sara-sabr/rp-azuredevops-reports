@@ -47,7 +47,7 @@ Download and install the following tools
 
 1. [Visual Studio Code](https://code.visualstudio.com/download)
 2. [Firefox](https://www.mozilla.org/firefox/) (because the VS Code Debugger for Chrome extension [doesn't support iframes](https://github.com/microsoft/vscode-chrome-debug/issues/786) yet)
-3. [Node LTS](https://nodejs.org/en/download/) (make sure its Node LTS - tested with Node 17)
+3. [Node LTS](https://nodejs.org/en/download/) (make sure its Node LTS - tested with Node 16)
 4. The [Debugger for Firefox](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug) VS Code extension
 5. The [tfx-cli](https://www.npmjs.com/package/tfx-cli) npm package
 6. The [webpack](https://www.npmjs.com/package/webpack) npm package
