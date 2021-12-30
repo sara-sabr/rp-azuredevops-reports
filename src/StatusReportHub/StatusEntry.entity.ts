@@ -3,7 +3,7 @@ import { WorkItem } from "azure-devops-extension-api/WorkItemTracking";
 
 // Project Level
 import { StatusReportConfig } from "./StatusReport.config";
-import { WorkItemBaseEntity } from "../Common/WorkItemBase.entity";
+import { WorkItemBaseEntity } from "@esdc-it-rp/azuredevops-common";
 import { ImpedimentsEntity } from "./Impediments.entity";
 
 /**
