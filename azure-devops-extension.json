@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "AzBoards Reports",
   "description": "Azure Boards Reports",
   "publisher": "ESDC-IT-SABR-RP",
@@ -50,19 +50,11 @@
     "enablemarketplaceqna":"false"
   },
   "icons": {
-    "default": "img/logo.png"
+    "default": "dist/static/img/logo.png"
   },
   "files": [
     {
-      "path": "static",
-      "addressable": true
-    },
-    {
-      "path": "img",
-      "addressable": true
-    },
-    {
-      "path": "i18n",
+      "path": "dist",
       "addressable": true
     }
   ]

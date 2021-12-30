@@ -46,7 +46,7 @@ module.exports = {
   target: "web",
   entry: entries,
   output: {
-    filename: "static/[name]/[name].js",
+    filename: "[name]/[name].js",
   },
   devtool: "inline-source-map",
   devServer: {
@@ -104,8 +104,8 @@ module.exports = {
   },
   plugins: [new CopyWebpackPlugin({
     patterns: [
-      { from: "**/*.html", to: "static/", context: path.resolve(__dirname, "src")},
-      { from: "img/**"},
+      { from: "**/*.html", context: path.resolve(__dirname, "src")},
+      { from: "img/**", to: "static"},
     ],
     options: {
       concurrency: 100,
