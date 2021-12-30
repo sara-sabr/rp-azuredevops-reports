@@ -52,7 +52,9 @@ module.exports = {
   devServer: {
     https: true,
     port: 3000,
-    publicPath: "/dist/"
+    static: {
+      directory: path.join(__dirname, 'dist'),
+    },
   },
   resolve: {
     extensions: [".ts", ".tsx", ".js"],
@@ -100,5 +102,13 @@ module.exports = {
       }
     ]
   },
-  plugins: [new CopyWebpackPlugin([{ from: "**/*.html", context: "src" }])]
+  plugins: [new CopyWebpackPlugin({
+    patterns: [
+      { from: "**/*.html", context: path.resolve(__dirname, "src")},
+      { from: "img/**"},
+    ],
+    options: {
+      concurrency: 100,
+    }
+  })]
 };

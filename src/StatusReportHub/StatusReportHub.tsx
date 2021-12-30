@@ -12,7 +12,7 @@ import {
   HeaderTitle,
   HeaderTitleArea,
   HeaderTitleRow,
-  TitleSize
+  TitleSize,
 } from "azure-devops-ui/Header";
 import { HeaderCommandBar } from "azure-devops-ui/HeaderCommandBar";
 import { Link } from "azure-devops-ui/Link";
@@ -24,17 +24,19 @@ import {
   IStatusProps,
   Status,
   StatusSize,
-  Statuses
+  Statuses,
 } from "azure-devops-ui/Status";
 import { ZeroData } from "azure-devops-ui/ZeroData";
 import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
 
 // Project Level
-import { Constants } from "../Common/Constants";
+import {
+  Constants,
+  ProjectService,
+  SearchResultEntity,
+} from "@esdc-it-rp/azuredevops-common";
 import { IStatusReportHubState } from "./IStatusReportHub.state";
 import { StatusEntryEntity } from "./StatusEntry.entity";
-import { ProjectService } from "../Common/Project.service";
-import { SearchResultEntity } from "../Search/SearchResult.entity";
 import { StatusReportService } from "./StatusReport.service";
 import { StatusReportEntity } from "./StatusReport.entity";
 import { StatusReportCommandMenu } from "./StatusReportCommandMenu.ui";
@@ -81,7 +83,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
     super(props);
     this.statusPageHub = {
       record: StatusReportService.LATEST_RECORD,
-      statusReport: undefined
+      statusReport: undefined,
     };
     this.commandButtons = new StatusReportCommandMenu();
     this.state = this.statusPageHub;
@@ -128,7 +130,8 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
    */
   private async performMountAsync(): Promise<void> {
     await SDK.init();
-    this.statusPageHub.userDisplayName = ProjectService.getCurrentUserDisplayName();
+    this.statusPageHub.userDisplayName =
+      ProjectService.getCurrentUserDisplayName();
     this.projectName = await ProjectService.getProjectName();
     await this.refreshSavedReports();
     await this.loadLatestRecord();
@@ -267,9 +270,8 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
     statusDocument: StatusReportEntity
   ): void {
     this.statusPageHub.currentSourceQuery = statusData.sourceQuery;
-    this.statusPageHub.statusReport = StatusReportService.groupResultData(
-      statusData
-    );
+    this.statusPageHub.statusReport =
+      StatusReportService.groupResultData(statusData);
     this.statusPageHub.currentSourceQuery = statusData.sourceQuery;
     this.statusPageHub.record = statusDocument;
     this.refreshState();
@@ -341,7 +343,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
             </p>
             {rowData.keyIssues.length > 0 && (
               <ul>
-                {rowData.keyIssues.map(value => {
+                {rowData.keyIssues.map((value) => {
                   return (
                     <li key={value.id}>
                       <Link
@@ -373,7 +375,7 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
         <tr className="status-report-grouped-header-row">
           <th colSpan={3}>{groupTitle}</th>
         </tr>
-        {this.state.statusReport?.get(groupTitle)?.map(value => {
+        {this.state.statusReport?.get(groupTitle)?.map((value) => {
           return this.writeStatusRow(value);
         })}
       </tbody>
@@ -429,27 +431,27 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
         // Add the latest
         id: StatusReportService.LATEST_RECORD.id as string,
         text: StatusReportService.LATEST_RECORD.name,
-        data: StatusReportService.LATEST_RECORD
+        data: StatusReportService.LATEST_RECORD,
       },
       {
         // Divider
         id: "divider",
-        type: ListBoxItemType.Divider
-      }
+        type: ListBoxItemType.Divider,
+      },
     ];
 
     if (savedDocuments && savedDocuments.length > 0) {
       itemList.push({
         id: "Saved Reports",
         type: ListBoxItemType.Header,
-        text: "Saved Reports"
+        text: "Saved Reports",
       });
 
       for (const report of savedDocuments) {
         itemList.push({
           id: report.id as string,
           text: report.name,
-          data: report
+          data: report,
         });
       }
     }
@@ -516,55 +518,64 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
                 <th className="status-report-col-details">Details</th>
               </tr>
             </thead>
-            {/** Print this on no data. */
-            this.state.statusReport === undefined && (
-              <tbody>
-                <tr>
-                  <td colSpan={3}>
-                    <div className="flex-row v-align-middle justify-center full-size">
-                      <Spinner
-                        size={SpinnerSize.large}
-                        label="Please wait ..."
-                      />
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            )}
-            {/** Status report with no data found. */
-            this.state.statusReport !== undefined &&
-              this.state.statusReport.size === 0 && (
+            {
+              /** Print this on no data. */
+              this.state.statusReport === undefined && (
                 <tbody>
                   <tr>
                     <td colSpan={3}>
-                      <ZeroData
-                        className="flex-row v-align-middle justify-center full-size"
-                        primaryText="No data found for this report."
-                        secondaryText={
-                          <div>
-                            <p>
-                              Please ensure the{" "}
-                              <Link href={this.state.queryUrl} target={"_top"}>
-                                {this.state.currentSourceQuery?.name}
-                              </Link>{" "}
-                              query actually produces a result.
-                            </p>
-                          </div>
-                        }
-                        imageAltText="No Data Image"
-                        imagePath="https://cdn.vsassets.io/v/M183_20210324.1/_content/Illustrations/general-no-results-found.svg"
-                      />
+                      <div className="flex-row v-align-middle justify-center full-size">
+                        <Spinner
+                          size={SpinnerSize.large}
+                          label="Please wait ..."
+                        />
+                      </div>
                     </td>
                   </tr>
                 </tbody>
-              )}
+              )
+            }
+            {
+              /** Status report with no data found. */
+              this.state.statusReport !== undefined &&
+                this.state.statusReport.size === 0 && (
+                  <tbody>
+                    <tr>
+                      <td colSpan={3}>
+                        <ZeroData
+                          className="flex-row v-align-middle justify-center full-size"
+                          primaryText="No data found for this report."
+                          secondaryText={
+                            <div>
+                              <p>
+                                Please ensure the{" "}
+                                <Link
+                                  href={this.state.queryUrl}
+                                  target={"_top"}
+                                >
+                                  {this.state.currentSourceQuery?.name}
+                                </Link>{" "}
+                                query actually produces a result.
+                              </p>
+                            </div>
+                          }
+                          imageAltText="No Data Image"
+                          imagePath="https://cdn.vsassets.io/v/M183_20210324.1/_content/Illustrations/general-no-results-found.svg"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                )
+            }
 
-            {/** Status report with data populated. */
-            this.state.statusReport !== undefined &&
-              this.state.statusReport.size >= 0 &&
-              [...this.state.statusReport].map(entry => {
-                return this.writeGroup(entry[0]);
-              })}
+            {
+              /** Status report with data populated. */
+              this.state.statusReport !== undefined &&
+                this.state.statusReport.size >= 0 &&
+                [...this.state.statusReport].map((entry) => {
+                  return this.writeGroup(entry[0]);
+                })
+            }
           </table>
         </div>
       </Page>

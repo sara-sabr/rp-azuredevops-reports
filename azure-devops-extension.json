@@ -1,10 +1,12 @@
 {
   "manifestVersion": 1,
-  "version": "0.2.0",
-  "name": "AzBoards QoL Automation",
-  "description": "Azure Boards Quality of Life Automation",
+  "version": "1.0.0",
+  "name": "AzBoards Reports",
+  "description": "Azure Boards Reports",
   "publisher": "ESDC-IT-SABR-RP",
-  "demands": ["api-version/3.0"],
+  "demands": [
+    "api-version/5.1"
+  ],
   "categories": ["Azure Boards"],
   "scopes": [
     "vso.work_full"

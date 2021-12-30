@@ -2,14 +2,16 @@
 import { QueryType } from "azure-devops-extension-api/WorkItemTracking";
 
 // Project level
-import { Constants } from "../Common/Constants";
+import {
+  Constants,
+  ProjectService,
+  SearchResultEntity,
+  SearchRepository,
+} from "@esdc-it-rp/azuredevops-common";
 import { ImpedimentsEntity } from "./Impediments.entity";
 import { StatusReportConfig } from "./StatusReport.config";
 import { StatusReportEntity } from "./StatusReport.entity";
 import { StatusEntryEntity } from "./StatusEntry.entity";
-import { ProjectService } from "../Common/Project.service";
-import { SearchResultEntity } from "../Search/SearchResult.entity";
-import { SearchRepository } from "../Search/Search.repository";
 import { StatusReportRepository } from "./StatusReport.repository";
 
 /**
@@ -22,7 +24,7 @@ export class StatusReportService {
   public static readonly LATEST_RECORD: StatusReportEntity = {
     id: "Latest",
     asOf: undefined,
-    name: "Latest"
+    name: "Latest",
   };
 
   /**
@@ -275,13 +277,11 @@ export class StatusReportService {
     }
 
     // Get the list of impediments.
-    const impedimentsResults: SearchResultEntity<
-      ImpedimentsEntity,
-      number
-    > = await SearchRepository.executeQuery(
-      StatusReportConfig.getQueryImpediments(),
-      ImpedimentsEntity
-    );
+    const impedimentsResults: SearchResultEntity<ImpedimentsEntity, number> =
+      await SearchRepository.executeQuery(
+        StatusReportConfig.getQueryImpediments(),
+        ImpedimentsEntity
+      );
     let relatedId: number;
     let relatedNode: SearchResultEntity<StatusEntryEntity, number> | undefined;
 
@@ -319,14 +319,12 @@ export class StatusReportService {
   static async getProjectStatus(
     asOf?: Date
   ): Promise<SearchResultEntity<StatusEntryEntity, number>> {
-    const projectStatus: SearchResultEntity<
-      StatusEntryEntity,
-      number
-    > = await SearchRepository.executeQuery(
-      StatusReportConfig.getQueryForLatestStatus(),
-      StatusEntryEntity,
-      asOf
-    );
+    const projectStatus: SearchResultEntity<StatusEntryEntity, number> =
+      await SearchRepository.executeQuery(
+        StatusReportConfig.getQueryForLatestStatus(),
+        StatusEntryEntity,
+        asOf
+      );
 
     if (!projectStatus.isEmpty()) {
       await StatusReportService.populateImpediments(projectStatus);
