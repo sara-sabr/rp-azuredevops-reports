@@ -105,7 +105,7 @@ module.exports = {
   plugins: [new CopyWebpackPlugin({
     patterns: [
       { from: "**/*.html", context: path.resolve(__dirname, "src")},
-      { from: "img/**"},
+      { from: "img/**", to: "static"},
     ],
     options: {
       concurrency: 100,
