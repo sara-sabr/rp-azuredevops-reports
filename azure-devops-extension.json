@@ -18,15 +18,15 @@
   ],
   "links": {
     "repository": {
-      "uri": "https://github.com/sara-sabr/AzBoards-QoL-Automation"
+      "uri": "https://github.com/sara-sabr/rp-azuredevops-reports"
     },
     "issues": {
-      "uri": "https://github.com/sara-sabr/AzBoards-QoL-Automation/issues"
+      "uri": "https://github.com/sara-sabr/rp-azuredevops-reports/issues"
     }
   },
   "repository": {
     "type": "git",
-    "uri": "https://github.com/sara-sabr/AzBoards-QoL-Automation/"
+    "uri": "https://github.com/sara-sabr/rp-azuredevops-reports/"
   },
   "branding": {
     "color": "rgb(51,65,133)",
