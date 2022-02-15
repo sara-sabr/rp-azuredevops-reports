@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "name": "AzBoards Reports",
   "description": "Azure Boards Reports",
   "publisher": "ESDC-IT-SABR-RP",
@@ -18,15 +18,15 @@
   ],
   "links": {
     "repository": {
-      "uri": "https://github.com/sara-sabr/AzBoards-QoL-Automation"
+      "uri": "https://github.com/sara-sabr/rp-azuredevops-reports"
     },
     "issues": {
-      "uri": "https://github.com/sara-sabr/AzBoards-QoL-Automation/issues"
+      "uri": "https://github.com/sara-sabr/rp-azuredevops-reports/issues"
     }
   },
   "repository": {
     "type": "git",
-    "uri": "https://github.com/sara-sabr/AzBoards-QoL-Automation/"
+    "uri": "https://github.com/sara-sabr/rp-azuredevops-reports/"
   },
   "branding": {
     "color": "rgb(51,65,133)",
