@@ -1,4 +1,5 @@
 import "./StatusReportHub.scss";
+import "../iconFont.css";
 
 // Library Level
 import * as React from "react";

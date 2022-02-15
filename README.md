@@ -1,7 +1,7 @@
 # Azure DevOps Extension - Boards - IT Research and Prototyping Reports
 
-[![Development](https://github.com/sara-sabr/AzBoards-QoL-Automation/actions/workflows/development.yml/badge.svg)](https://github.com/sara-sabr/AzBoards-QoL-Automation/actions/workflows/development.yml)
-[![Production](https://github.com/sara-sabr/AzBoards-QoL-Automation/actions/workflows/production.yml/badge.svg)](https://github.com/sara-sabr/AzBoards-QoL-Automation/actions/workflows/production.yml)
+[![Development](https://github.com/sara-sabr/rp-azuredevops-reports/actions/workflows/development.yml/badge.svg)](https://github.com/sara-sabr/rp-azuredevops-reports/actions/workflows/development.yml)
+[![Production](https://github.com/sara-sabr/rp-azuredevops-reports/actions/workflows/production.yml/badge.svg)](https://github.com/sara-sabr/rp-azuredevops-reports/actions/workflows/production.yml)
 
 This Azure Boards extension provides canned reporting capability for an Azure Project.
 
