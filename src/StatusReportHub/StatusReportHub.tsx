@@ -68,7 +68,8 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
   /**
    * The list of reports saved. (This is using observer pattern)
    */
-  private savedReportArray = new ObservableValue<IListBoxItem[]>([]);
+  private savedReportArray: ObservableValue<IListBoxItem[]> =
+    new ObservableValue<IListBoxItem[]>([]);
 
   /**
    * Work item URL prefix
@@ -475,19 +476,23 @@ class StatusReportHub extends React.Component<{}, IStatusReportHubState> {
             </HeaderTitleRow>
             <HeaderDescription>
               <Observer items={this.savedReportArray}>
-                <Dropdown
-                  ariaLabel="Report Date"
-                  placeholder="Select a report"
-                  showFilterBox={true}
-                  items={[]}
-                  selection={this.statusReportSelection}
-                  onSelect={this.eventHandlerStatusReportSelection.bind(this)}
-                />
+                {(props: { items: IListBoxItem[] }) => (
+                  <Dropdown
+                    ariaLabel="Report Date"
+                    placeholder="Select a report"
+                    showFilterBox={true}
+                    items={props.items}
+                    selection={this.statusReportSelection}
+                    onSelect={this.eventHandlerStatusReportSelection.bind(this)}
+                  />
+                )}
               </Observer>
             </HeaderDescription>
           </HeaderTitleArea>
           <Observer items={this.commandButtons.buttons}>
-            <HeaderCommandBar items={this.commandButtons.buttons.value} />
+            {(props: { items: IListBoxItem[] }) => (
+              <HeaderCommandBar items={props.items} />
+            )}
           </Observer>
         </CustomHeader>
         <div className="page-content-left page-content-right page-content-top">
